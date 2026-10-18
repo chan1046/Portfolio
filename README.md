@@ -15,7 +15,7 @@
 | `data-extra.js` | 검증 수준 배지, 내 역할, 예상 질문(초안), 증빙 목록 |
 | `app.js` | 페이지 렌더링, 직무별 보기, 검색(Ctrl+K), 발표 모드 |
 | `style.css`, `extra.css` | 공통 스타일, 기능별 스타일 |
-| `assets/resume.pdf` | 이력서 PDF (이메일 오타 수정본으로 교체 필요) |
+| `assets/resume.pdf` | 이력서 PDF (범용 1쪽, 원본은 `resume-general.html`) |
 | `assets/img/` | 사진과 결과 이미지 (아래 파일 이름 그대로) |
 | `assets/img/todak-flow.svg` | 토닥(따뜻한 말 연구소) 프로젝트 흐름도 |
 | `apply-toss/` | 토스플레이스 Direct Sales Associate 지원용 이력서(PDF)와 포트폴리오 페이지 |
@@ -45,3 +45,4 @@ Claude Design 캔버스: https://claude.ai/artifact/WyNmzqhTnEK8Zmk9gaugqb (본�
 
 ## 2026.10.18
 - 이력서 PDF 이메일 오타 수정, 홈 제목 변경
+- 범용 이력서(1쪽)로 교체, 홈 소개 문단 삭제, 램프 사진 2장 제거, Rasorber 상장 사진 추가, 프로젝트 Q&A 답변 수정
