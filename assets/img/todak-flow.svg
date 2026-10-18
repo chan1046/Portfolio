@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="세미나에서 앱과 램프로 이어진 흐름도">
+<rect width="1200" height="750" fill="#F3F1FC"/>
+<g font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif" text-anchor="middle">
+<text x="600" y="90" font-size="34" font-weight="800" fill="#2A2870">세미나에서 램프까지</text>
+<g>
+<rect x="60" y="190" width="320" height="300" rx="28" fill="#fff"/>
+<text x="220" y="250" font-size="20" font-weight="700" fill="#3F3B93">1  부모 언어 개선 세미나</text>
+<text x="220" y="320" font-size="28" font-weight="800" fill="#1C1B3A">유료 2회, 19명</text>
+<text x="220" y="372" font-size="20" fill="#3A3856">1차 7명 · 2차 12명</text>
+<text x="220" y="408" font-size="20" fill="#3A3856">참가비 4만원</text>
+<text x="220" y="450" font-size="16" fill="#5B5873">2026.04.30 · 05.07</text>
+</g>
+<path d="M392 340 H436" stroke="#3F3B93" stroke-width="5" stroke-linecap="round"/><path d="M426 326 L442 340 L426 354" fill="none" stroke="#3F3B93" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g>
+<rect x="450" y="190" width="300" height="300" rx="28" fill="#2A2870"/>
+<text x="600" y="250" font-size="20" font-weight="700" fill="#C9C5FF">2  확인한 한계</text>
+<text x="600" y="320" font-size="26" font-weight="800" fill="#fff">“고치고 싶어도</text>
+<text x="600" y="358" font-size="26" font-weight="800" fill="#fff">말하는 순간엔</text>
+<text x="600" y="396" font-size="26" font-weight="800" fill="#fff">생각이 안 난다”</text>
+<text x="600" y="450" font-size="16" fill="#C9C5FF">일회성 교육의 한계</text>
+</g>
+<path d="M762 340 H806" stroke="#3F3B93" stroke-width="5" stroke-linecap="round"/><path d="M796 326 L812 340 L796 354" fill="none" stroke="#3F3B93" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g>
+<rect x="820" y="190" width="320" height="300" rx="28" fill="#fff"/>
+<text x="980" y="250" font-size="20" font-weight="700" fill="#3F3B93">3  앱과 램프 시제품</text>
+<text x="980" y="320" font-size="22" font-weight="800" fill="#1C1B3A">말하는 순간 바로 알림</text>
+<text x="980" y="368" font-size="19" fill="#3A3856">초록 · 빨강 LED + 앱 피드백</text>
+<text x="980" y="404" font-size="19" fill="#3A3856">약 35명 시연</text>
+<text x="980" y="450" font-size="16" fill="#5B5873">학생 창업 마라톤 우수상</text>
+</g>
+<text x="600" y="600" font-size="18" fill="#5B5873">참가자 수는 사업계획서 기준입니다.</text>
+</g></svg>
