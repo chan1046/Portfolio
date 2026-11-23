@@ -95,7 +95,6 @@
     { id: "lamp", cover: "lamp-booth.jpg", photo: true },
     { id: "solar", cover: "solar-app-dashboard.png" }
   ];
-  var openProject = null;
 
   var PROJECT_EMPHASIS = {
     fsr: {
@@ -152,13 +151,15 @@
       '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
     var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
       '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-grid">' +
-      HOME_PROJECTS.map(function (item) { return projectPreview(byId(item.id), item); }).join("") +
-      '<div class="project-detail" id="project-detail" hidden></div></div></div></section>';
+      HOME_PROJECTS.map(function (item) { return projectPreview(byId(item.id), item); }).join("") + '</div></div></section>';
+    var details = '<section class="sec white project-details" aria-labelledby="project-details-title"><div class="wrap">' +
+      '<h2 class="t" id="project-details-title">프로젝트 상세</h2>' +
+      HOME_PROJECTS.map(function (item) { return projectCard(byId(item.id), item); }).join("") + '</div></section>';
     var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
       '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
     var resources = '<nav class="wrap home-resources" aria-label="추가 자료"><a href="about.html">소개</a><a href="activities.html">활동 및 수상</a>' +
       '<a href="credentials.html">자격 및 교육</a><a href="evidence.html">증빙 모아보기</a><a href="summary.html">한 장 요약</a></nav>';
-    app.innerHTML = hero + '<main>' + projects + career + '</main><footer>' + resources + contact() + '</footer>';
+    app.innerHTML = hero + '<main>' + projects + details + career + '</main><footer>' + resources + contact() + '</footer>';
   }
 
   function projectPreview(p, item) {
@@ -168,7 +169,7 @@
       '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></div>' +
       '<div class="project-preview-body"><h3>' + esc(p.title) + '</h3><p>' + esc(p.date) + '</p>' +
       '<a class="project-preview-link" href="' + href(p) + '" aria-label="' + esc(p.title + " 상세보기") +
-      '" aria-controls="project-detail" aria-expanded="false">상세보기</a></div></article>';
+      '">상세보기</a></div></article>';
   }
 
   function emphasize(text, phrases) {
@@ -195,9 +196,8 @@
       ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
       : "";
     return '<article class="project-chapter" id="' + id + '" aria-labelledby="' + id + '-title">' +
-      '<header class="project-chapter-header"><div><h3 id="' + id + '-title" tabindex="-1">' + esc(p.title) + '</h3>' +
-      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></div>' +
-      '<button class="project-close" type="button">상세 닫기</button></header>' +
+      '<header class="project-chapter-header"><h3 id="' + id + '-title">' + esc(p.title) + '</h3>' +
+      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></header>' +
       '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
       '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
@@ -247,61 +247,9 @@
     return [redefine, pipeline, issues].map(function (content) { return sec(content, "tight"); }).join("");
   }
 
-  function placeProjectDetail() {
-    if (!openProject) return;
-    var panel = $("#project-detail");
-    var grid = panel.parentElement;
-    var cards = $$(".project-preview-card", grid);
-    var index = HOME_PROJECTS.indexOf(openProject);
-    var columns = parseInt(getComputedStyle(grid).getPropertyValue("--project-columns"), 10) || 1;
-    var rowEnd = Math.min(cards.length, Math.ceil((index + 1) / columns) * columns);
-    var lastCard = cards[rowEnd - 1];
-    if (lastCard.nextElementSibling !== panel) lastCard.after(panel);
-  }
-
-  function clearProjectDetail() {
-    if (!openProject) return null;
-    var trigger = $("#preview-" + openProject.id + " .project-preview-link");
-    var panel = $("#project-detail");
-    trigger.setAttribute("aria-expanded", "false");
-    panel.hidden = true;
-    panel.innerHTML = "";
-    openProject = null;
-    return trigger;
-  }
-
-  function closeProjectDetail() {
-    var trigger = clearProjectDetail();
-    if (!trigger) return;
-    history.replaceState(history.state, "", "#projects");
-    trigger.focus({ preventScroll: true });
-    trigger.scrollIntoView({ block: "nearest" });
-  }
-
   function jumpToHomeAnchor() {
-    var id = location.hash.slice(1);
-    var item = HOME_PROJECTS.find(function (project) { return id === "project-" + project.id; });
-    if (item) {
-      if (openProject !== item) {
-        clearProjectDetail();
-        openProject = item;
-        var panel = $("#project-detail");
-        panel.innerHTML = projectCard(byId(item.id), item);
-        placeProjectDetail();
-        panel.hidden = false;
-        $("#preview-" + item.id + " .project-preview-link").setAttribute("aria-expanded", "true");
-        $(".project-close", panel).addEventListener("click", closeProjectDetail);
-      }
-      var heading = document.getElementById(id + "-title");
-      heading.focus({ preventScroll: true });
-      document.getElementById(id).scrollIntoView({ block: "start" });
-      return;
-    }
-
-    clearProjectDetail();
-    if (id === "projects" || id === "career") {
-      document.getElementById(id).scrollIntoView({ block: "start" });
-    }
+    var target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ block: "start" });
   }
 
   function legacyProject() {
@@ -665,8 +613,6 @@
   (R[page] || home)();
   if (page === "home") {
     jumpToHomeAnchor();
-    window.addEventListener("hashchange", jumpToHomeAnchor);
-    window.addEventListener("resize", placeProjectDetail);
   } else if (page !== "project" && page !== "projects") {
     applyDomain();
     initBot();

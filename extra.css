@@ -244,14 +244,13 @@ section.home-projects, section.home-career { padding: 40px 0 54px; }
 .project-preview-body { display: flex; flex-direction: column; flex: 1; gap: 8px; padding: 16px 18px 18px; }
 .project-preview-body h3 { margin: 0; color: var(--ink); font-size: 18px; line-height: 1.45; }
 .project-preview-body p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
-.project-preview-link, .project-close { display: inline-flex; align-items: center; align-self: flex-start; min-height: 40px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.project-preview-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 40px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; }
 .project-preview-link { margin-top: auto; }
-.project-preview-link:hover, .project-preview-link[aria-expanded="true"], .project-close:hover { background: #eee9fb; opacity: 1; }
-.project-detail { grid-column: 1 / -1; min-width: 0; }
-.project-detail[hidden] { display: none; }
+.project-preview-link:hover { background: #eee9fb; opacity: 1; }
+section.project-details { padding: 12px 0 54px; }
+.project-details h2.t { margin: 0 0 20px; }
 .project-chapter { padding: clamp(20px, 3vw, 34px); scroll-margin-top: 18px; border: 1px solid #b7afe8; border-radius: 18px; background: #fff; }
-.project-chapter-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px 16px; }
-.project-close { flex: none; }
+.project-chapter + .project-chapter { margin-top: clamp(18px, 2.5vw, 28px); }
 .project-chapter-header h3 { margin: 0; color: var(--ink); font-size: clamp(21px, 3vw, 32px); line-height: 1.32; letter-spacing: -.02em; }
 .project-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; color: var(--muted); font-size: 14px; }
 .project-role { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; padding: 11px 14px; border-radius: 10px; background: #f1eefc; }
