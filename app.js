@@ -87,14 +87,16 @@
 
   /* ---------- 홈과 프로젝트 ---------- */
   var HOME_PROJECTS = [
-    { id: "fsr", label: "FSR 전파 구조 설계", role: "결합 구조 최적화 및 실측 참여", proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
-    { id: "fpga", label: "FPGA 가속기", role: "고정소수점 행렬 곱셈기 구현", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
-    { id: "cooling", label: "냉각 설비 고장 예측", role: "센서 전처리 및 대시보드 구현", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
-    { id: "tcad", label: "TCAD 반도체 소자 설계", role: "소자 설계 및 도핑 조건 조정" },
-    { id: "todak", label: "토닥 부모 언어 개선", role: "세미나 기획 및 운영" },
-    { id: "lamp", label: "따뜻한 말 램프", role: "음성 분석 결과의 LED와 앱 연동" },
-    { id: "solar", label: "태양광 설비 관리 앱", role: "시험 데이터 및 테스트 작성" }
+    { id: "fsr", cover: "fsr-pcb.jpg", photo: true, proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
+    { id: "fpga", cover: "fpga-util.png", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
+    { id: "cooling", cover: "cooling-real-overview.png", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
+    { id: "tcad", cover: "tcad-idvg.png" },
+    { id: "todak", cover: "todak-poster-1.jpg" },
+    { id: "lamp", cover: "lamp-booth.jpg", photo: true },
+    { id: "solar", cover: "solar-app-dashboard.png" }
   ];
+  var openProject = null;
+
   var PROJECT_EMPHASIS = {
     fsr: {
       do: ["HFSS로 결합 구조를 최적화", "VNA 자유공간 측정에 참여"],
@@ -148,19 +150,25 @@
       '<p class="lead">RF 시제품을 설계하고 흡수율과 투과손실을 실측했습니다. 반도체 설비 20대의 센서 데이터를 처리해 점검 우선순위를 보여주는 대시보드를 구현했습니다.</p>' +
       '<nav class="home-links" aria-label="주 메뉴"><a class="btn cream" href="#projects">프로젝트 보기</a>' +
       '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
-    var links = HOME_PROJECTS.map(function (item) {
-      return '<li><a href="' + href(byId(item.id)) + '"><strong>' + esc(item.label) + '</strong><span>' + esc(item.role) + '</span></a></li>';
-    }).join("");
     var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
-      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-workspace">' +
-      '<nav class="project-index" aria-label="프로젝트 목록"><ul>' + links + '</ul></nav>' +
-      '<div class="project-list">' + HOME_PROJECTS.map(function (item) { return projectCard(byId(item.id), item); }).join("") +
-      '</div></div></div></section>';
+      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-grid">' +
+      HOME_PROJECTS.map(function (item) { return projectPreview(byId(item.id), item); }).join("") +
+      '<div class="project-detail" id="project-detail" hidden></div></div></div></section>';
     var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
       '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
     var resources = '<nav class="wrap home-resources" aria-label="추가 자료"><a href="about.html">소개</a><a href="activities.html">활동 및 수상</a>' +
       '<a href="credentials.html">자격 및 교육</a><a href="evidence.html">증빙 모아보기</a><a href="summary.html">한 장 요약</a></nav>';
     app.innerHTML = hero + '<main>' + projects + career + '</main><footer>' + resources + contact() + '</footer>';
+  }
+
+  function projectPreview(p, item) {
+    var cover = p.gallery.find(function (image) { return image.src === item.cover; });
+    return '<article class="project-preview-card" id="preview-' + p.id + '">' +
+      '<div class="project-preview-media' + (item.photo ? ' is-photo' : '') + '"><img src="assets/img/' + esc(cover.src) +
+      '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></div>' +
+      '<div class="project-preview-body"><h3>' + esc(p.title) + '</h3><p>' + esc(p.date) + '</p>' +
+      '<a class="project-preview-link" href="' + href(p) + '" aria-label="' + esc(p.title + " 상세보기") +
+      '" aria-controls="project-detail" aria-expanded="false">상세보기</a></div></article>';
   }
 
   function emphasize(text, phrases) {
@@ -187,8 +195,9 @@
       ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
       : "";
     return '<article class="project-chapter" id="' + id + '" aria-labelledby="' + id + '-title">' +
-      '<header class="project-chapter-header"><h3 id="' + id + '-title">' + esc(p.title) + '</h3>' +
-      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></header>' +
+      '<header class="project-chapter-header"><div><h3 id="' + id + '-title" tabindex="-1">' + esc(p.title) + '</h3>' +
+      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></div>' +
+      '<button class="project-close" type="button">상세 닫기</button></header>' +
       '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
       '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
@@ -238,47 +247,61 @@
     return [redefine, pipeline, issues].map(function (content) { return sec(content, "tight"); }).join("");
   }
 
-  function jumpToHomeAnchor() {
-    var id = location.hash.slice(1);
-    if (id !== "projects" && id !== "career" && id.indexOf("project-") !== 0) return;
-    var target = document.getElementById(id);
-    if (target) target.scrollIntoView({ block: "start" });
+  function placeProjectDetail() {
+    if (!openProject) return;
+    var panel = $("#project-detail");
+    var grid = panel.parentElement;
+    var cards = $$(".project-preview-card", grid);
+    var index = HOME_PROJECTS.indexOf(openProject);
+    var columns = parseInt(getComputedStyle(grid).getPropertyValue("--project-columns"), 10) || 1;
+    var rowEnd = Math.min(cards.length, Math.ceil((index + 1) / columns) * columns);
+    var lastCard = cards[rowEnd - 1];
+    if (lastCard.nextElementSibling !== panel) lastCard.after(panel);
   }
 
-  function initProjectIndex() {
-    var chapters = $$(".project-chapter");
-    var links = $$(".project-index a");
-    var active = -1;
-    var pending = false;
+  function clearProjectDetail() {
+    if (!openProject) return null;
+    var trigger = $("#preview-" + openProject.id + " .project-preview-link");
+    var panel = $("#project-detail");
+    trigger.setAttribute("aria-expanded", "false");
+    panel.hidden = true;
+    panel.innerHTML = "";
+    openProject = null;
+    return trigger;
+  }
 
-    function update() {
-      pending = false;
-      var current = 0;
-      var readingLine = window.innerHeight * 0.35;
-      for (var i = 1; i < chapters.length; i++) {
-        if (chapters[i].getBoundingClientRect().top <= readingLine) current = i;
-        else break;
+  function closeProjectDetail() {
+    var trigger = clearProjectDetail();
+    if (!trigger) return;
+    history.replaceState(history.state, "", "#projects");
+    trigger.focus({ preventScroll: true });
+    trigger.scrollIntoView({ block: "nearest" });
+  }
+
+  function jumpToHomeAnchor() {
+    var id = location.hash.slice(1);
+    var item = HOME_PROJECTS.find(function (project) { return id === "project-" + project.id; });
+    if (item) {
+      if (openProject !== item) {
+        clearProjectDetail();
+        openProject = item;
+        var panel = $("#project-detail");
+        panel.innerHTML = projectCard(byId(item.id), item);
+        placeProjectDetail();
+        panel.hidden = false;
+        $("#preview-" + item.id + " .project-preview-link").setAttribute("aria-expanded", "true");
+        $(".project-close", panel).addEventListener("click", closeProjectDetail);
       }
-      if (active === current) return;
-      if (active !== -1) {
-        chapters[active].classList.remove("is-current");
-        links[active].removeAttribute("aria-current");
-      }
-      chapters[current].classList.add("is-current");
-      links[current].setAttribute("aria-current", "location");
-      active = current;
+      var heading = document.getElementById(id + "-title");
+      heading.focus({ preventScroll: true });
+      document.getElementById(id).scrollIntoView({ block: "start" });
+      return;
     }
 
-    function schedule() {
-      if (pending) return;
-      pending = true;
-      window.requestAnimationFrame(update);
+    clearProjectDetail();
+    if (id === "projects" || id === "career") {
+      document.getElementById(id).scrollIntoView({ block: "start" });
     }
-
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    $(".project-list").addEventListener("toggle", schedule, true);
-    schedule();
   }
 
   function legacyProject() {
@@ -642,7 +665,8 @@
   (R[page] || home)();
   if (page === "home") {
     jumpToHomeAnchor();
-    initProjectIndex();
+    window.addEventListener("hashchange", jumpToHomeAnchor);
+    window.addEventListener("resize", placeProjectDetail);
   } else if (page !== "project" && page !== "projects") {
     applyDomain();
     initBot();
