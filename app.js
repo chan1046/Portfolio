@@ -5,7 +5,6 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
-  var nb = function () { return Array.prototype.slice.call(arguments).map(function (x) { return '<span class="nb">' + esc(x) + "</span>"; }).join(" "); };
   var store = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 저장 불가 환경 */ } }
@@ -17,8 +16,8 @@
   var domLabel = function (id) { var d = S.domains.filter(function (x) { return x.id === id; })[0]; return d ? d.label : id; };
   var href = function (p) { return (page === "home" ? "" : "index.html") + "#project-" + p.id; };
 
-  var NAV = [["index.html", "홈", "home"], ["index.html#projects", "프로젝트", "projects"], ["about.html", "소개", "about"], ["experience.html", "경력", "experience"], ["activities.html", "활동·수상", "activities"], ["credentials.html", "자격·교육", "credentials"]];
-  var MORE = [["cases.html", "원인 재정의 사례 모음", "cases"], ["tools.html", "도구 · 프로젝트 매트릭스", "tools"], ["timeline.html", "타임라인", "timeline"], ["evidence.html", "증빙 모아보기", "evidence"], ["summary.html", "한 장 요약 (인쇄용)", "summary"]];
+  var NAV = [["index.html", "홈", "home"], ["index.html#projects", "프로젝트", "projects"], ["experience.html", "경력", "experience"], ["index.html#activities", "활동 및 수상", "activities"], ["index.html#credentials", "자격 및 교육", "credentials"]];
+  var MORE = [["cases.html", "원인 재정의 사례 모음", "cases"], ["tools.html", "도구 · 프로젝트 매트릭스", "tools"], ["timeline.html", "타임라인", "timeline"], ["evidence.html", "증빙자료", "evidence"], ["summary.html", "이력서", "summary"]];
 
   /* ---------- 공통 조각 ---------- */
   function top(active) {
@@ -146,9 +145,9 @@
     var hero = '<header class="band home-band"><div class="wrap"><div class="hero home-hero">' +
       '<div class="home-profile"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="" width="64" height="64">' +
       '<div><h1>조예찬</h1><p>서울과학기술대학교 전기정보공학과</p></div></div>' +
-      '<p class="lead">RF 시제품을 설계하고 흡수율과 투과손실을 실측했습니다. 반도체 설비 20대의 센서 데이터를 처리해 점검 우선순위를 보여주는 대시보드를 구현했습니다.</p>' +
       '<nav class="home-links" aria-label="주 메뉴"><a class="btn cream" href="#projects">프로젝트 보기</a>' +
-      '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
+      '<a class="btn line" href="#career">경력</a><a class="btn line" href="#activities">활동 및 수상</a>' +
+      '<a class="btn line" href="#credentials">자격 및 교육</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
     var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
       '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-grid">' +
       HOME_PROJECTS.map(function (item) { return projectPreview(byId(item.id), item); }).join("") + '</div></div></section>';
@@ -157,9 +156,30 @@
       HOME_PROJECTS.map(function (item) { return projectCard(byId(item.id), item); }).join("") + '</div></section>';
     var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
       '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
-    var resources = '<nav class="wrap home-resources" aria-label="추가 자료"><a href="about.html">소개</a><a href="activities.html">활동 및 수상</a>' +
-      '<a href="credentials.html">자격 및 교육</a><a href="evidence.html">증빙 모아보기</a><a href="summary.html">한 장 요약</a></nav>';
-    app.innerHTML = hero + '<main>' + projects + details + career + '</main><footer>' + resources + contact() + '</footer>';
+    var resources = '<nav class="wrap home-resources" aria-label="추가 자료">' +
+      '<a href="evidence.html">증빙자료</a><a href="summary.html">이력서</a></nav>';
+    app.innerHTML = hero + '<main>' + projects + details + career + homeRecords() + '</main><footer>' + resources + contact() + '</footer>';
+  }
+
+  function homeRecord(title, period, detail) {
+    return '<li class="home-record"><div><strong>' + esc(title) + '</strong>' +
+      (period ? '<span class="home-record-date">' + esc(period) + '</span>' : '') + '</div>' +
+      (detail ? '<p>' + esc(detail) + '</p>' : '') + '</li>';
+  }
+
+  function homeRecords() {
+    var activities = homeRecord("대학생 동아리 리더", S.club.when, S.club.body) +
+      S.etc.map(function (item) { return homeRecord(item); }).join("");
+    var awards = S.awards.map(function (item) { return homeRecord(item.title, item.when, item.sub); }).join("");
+    var certs = S.certs.map(function (item) { return homeRecord(item.name, item.date, item.org); }).join("");
+    var education = S.edu.map(function (item) {
+      return homeRecord(item.title, item.when, item.hours + " | " + item.body);
+    }).join("");
+    return '<div class="sec white home-records"><div class="wrap home-records-grid">' +
+      '<section id="activities" aria-labelledby="activities-title"><h2 class="t" id="activities-title">활동 및 수상</h2>' +
+      '<h3>활동</h3><ul>' + activities + '</ul><h3>수상</h3><ul>' + awards + '</ul></section>' +
+      '<section id="credentials" aria-labelledby="credentials-title"><h2 class="t" id="credentials-title">자격 및 교육</h2>' +
+      '<h3>자격 및 어학</h3><ul>' + certs + '</ul><h3>교육</h3><ul>' + education + '</ul></section></div></div>';
   }
 
   function projectPreview(p, item) {
@@ -257,17 +277,7 @@
     location.replace(p ? href(p) : "index.html#projects");
   }
 
-  /* ---------- 소개 · 경력 · 활동 · 자격 ---------- */
-  function about() {
-    document.title = "소개 | 조예찬";
-    app.innerHTML = head("about", "ABOUT", "예찬적 사고") +
-      sec('<p class="about-p">' + nb("이름 그대로", "‘예찬적 사고’를 한다는 말을", "주변에서 들어 왔습니다.") + "<br>" + nb("안 되는 상황에서도", "가능성을 먼저 찾고,", "그 가능성을 설계 변경으로 연결하는", "방식으로 일해 왔습니다.") + "</p>") +
-      sec('<div class="oneline"><div class="eyebrow">ONE LINE</div><p>' + nb("FSR은 결합 후 성능이 떨어졌을 때,", "FPGA는 합성이 불가능했을 때", "포기하지 않고", "원인부터 다시 정의했습니다.") + '</p><div class="btns"><a class="btn line" href="index.html#project-fsr">FSR 보기 →</a><a class="btn line" href="index.html#project-fpga">FPGA 보기 →</a><a class="btn line" href="cases.html">사례 모아보기 →</a></div></div>', "tight") +
-      sec('<div class="eyebrow dark">DIRECTION</div><h2 class="t">누군가를 돕는 사람</h2><p class="about-p" style="font-size:19px;font-weight:400;margin-bottom:48px">' + nb("앞으로는 누군가를 돕는 사람으로", "일하고 싶습니다.") + "<br>" + nb("전기기사 필기 멘토링,", "대학생 동아리 운영,", "‘따뜻한 말 램프’ 같은 활동도", "모두 그 방향에 있었습니다.") + '</p><div class="lcards">' +
-        [["experience.html", "전기기사 필기 멘토링", "주식회사 맞추다 · 약 50명 대상"], ["activities.html", "대학생 동아리 리더", "구성원 120명에서 170명 이상으로"], [href(byId("lamp")), "‘따뜻한 말 램프’", "AI 기반 부모 언어 개선 제품"]]
-          .map(function (l) { return '<a class="lcard" href="' + l[0] + '"><div><b>' + l[1] + "</b><span>" + l[2] + "</span></div><em>자세히 →</em></a>"; }).join("") + "</div>") +
-      contact('<a class="btn line" href="experience.html">다음: 경력 →</a>');
-  }
+  /* ---------- 경력 ---------- */
   function careerRows(heading) {
     return '<div class="rows">' + S.career.map(function (c) {
       return '<div class="row"><div class="when"><b>' + esc(c.when) + '</b><span class="role">' + esc(c.role) + '</span></div>' +
@@ -277,23 +287,8 @@
   function experience() {
     document.title = "경력 | 조예찬";
     app.innerHTML = head("experience", "EXPERIENCE", "경력") +
-      sec(careerRows("h2")) + nextBand("activities.html", "활동 및 수상");
+      sec(careerRows("h2")) + nextBand("index.html#activities", "활동 및 수상");
   }
-  function activities() {
-    document.title = "활동·수상 | 조예찬";
-    app.innerHTML = head("activities", "ACTIVITIES & AWARDS", "활동 · 수상", "수상 3건과 동아리 운영 경험입니다.") +
-      sec('<div class="eyebrow dark">AWARDS</div><h2 class="t" style="margin-bottom:40px">수상</h2><div class="awards">' + S.awards.map(function (a) { return '<div class="award"><div class="w">' + a.when + "</div><b>" + a.title + "</b><span>" + a.sub + "</span></div>"; }).join("") + "</div>", "tight") +
-      sec('<div class="eyebrow dark">LEADERSHIP</div><h2 class="t" style="margin-bottom:40px">대학생 동아리 리더</h2><div class="club"><div class="w">' + S.club.when + "</div><p>" + esc(S.club.body) + '</p><div class="ks">' + S.club.stats.map(function (k) { return "<div><b>" + k.n + "</b><span>" + k.l + "</span></div>"; }).join("") + "</div></div>", "tight") +
-      sec('<div class="eyebrow dark">ETC</div><h2 class="t" style="margin-bottom:28px">그 외 활동</h2><div class="etc">' + S.etc.map(function (e) { return "<div>" + e + "</div>"; }).join("") + "</div>", "tight") +
-      nextBand("credentials.html", "자격 · 교육");
-  }
-  function credentials() {
-    document.title = "자격·교육 | 조예찬";
-    app.innerHTML = head("credentials", "CREDENTIALS", "학력 · 자격 · 교육", "서울과학기술대학교 전기정보공학과 학사 · 학점 3.8/4.5") +
-      sec('<div class="eyebrow dark">LICENSES</div><h2 class="t" style="margin-bottom:40px">자격 · 어학</h2><div class="certs">' + S.certs.map(function (c) { return '<div class="cert"><b>' + c.name + "</b><span>" + c.org + "</span><time>" + c.date + "</time></div>"; }).join("") + "</div>", "tight") +
-      sec('<div class="eyebrow dark">TRAINING</div><h2 class="t" style="margin-bottom:40px">교육 이수</h2><div class="edus">' + S.edu.map(function (e) { return '<div class="edu"><div class="m"><b>' + e.when + "</b><i>" + e.hours + "</i></div><h3>" + e.title + "</h3><p>" + e.body + "</p></div>"; }).join("") + "</div>", "tight") + contact();
-  }
-
   /* ---------- ④ 원인 재정의 사례 모음 ---------- */
   function step(p, k) { return p.steps.filter(function (s) { return s.k === k; })[0]; }
   function cases() {
@@ -329,10 +324,10 @@
     var ym = function (s) { var m = /(\d{4})\.(\d{2})/.exec(s); return m ? +m[1] * 100 + +m[2] : 0; };
     P.forEach(function (p) { ev.push({ k: "project", ym: ym(p.date), when: p.date, title: p.title, sub: p.role, href: href(p) }); });
     S.career.forEach(function (c) { ev.push({ k: "career", ym: ym(c.when), when: c.when, title: c.org, sub: c.role, href: "experience.html" }); });
-    S.awards.forEach(function (a) { ev.push({ k: "award", ym: ym(a.when), when: a.when, title: a.title, sub: a.sub, href: "activities.html" }); });
-    ev.push({ k: "award", ym: ym(S.club.when), when: S.club.when, title: "대학생 동아리 리더", sub: "8명 운영진", href: "activities.html" });
-    S.edu.forEach(function (e) { ev.push({ k: "edu", ym: ym(e.when), when: e.when, title: e.title, sub: e.hours, href: "credentials.html" }); });
-    S.certs.filter(function (c) { return !/운전면허|한국사/.test(c.name); }).forEach(function (c) { ev.push({ k: "edu", ym: ym(c.date), when: c.date, title: c.name, sub: c.org, href: "credentials.html" }); });
+    S.awards.forEach(function (a) { ev.push({ k: "award", ym: ym(a.when), when: a.when, title: a.title, sub: a.sub, href: "index.html#activities" }); });
+    ev.push({ k: "award", ym: ym(S.club.when), when: S.club.when, title: "대학생 동아리 리더", sub: "8명 운영진", href: "index.html#activities" });
+    S.edu.forEach(function (e) { ev.push({ k: "edu", ym: ym(e.when), when: e.when, title: e.title, sub: e.hours, href: "index.html#credentials" }); });
+    S.certs.filter(function (c) { return !/운전면허|한국사/.test(c.name); }).forEach(function (c) { ev.push({ k: "edu", ym: ym(c.date), when: c.date, title: c.name, sub: c.org, href: "index.html#credentials" }); });
     ev.sort(function (a, b) { return b.ym - a.ym; });
     var kinds = [["all", "전체"], ["project", "프로젝트"], ["career", "경력"], ["award", "수상 · 활동"], ["edu", "교육 · 자격"]];
     var years = {};
@@ -354,11 +349,11 @@
 
   /* ---------- ⑪ 증빙 ---------- */
   function evidence() {
-    document.title = "증빙 | 조예찬";
+    document.title = "증빙자료 | 조예찬";
     var items = S.evidence.filter(function (e) { return e.ready; });
     var urlAll = new URLSearchParams(location.search).get("all") === "1";
     if (urlAll) items = S.evidence;
-    app.innerHTML = head("evidence", "EVIDENCE", "증빙 모아보기", "수치와 성과를 뒷받침하는 자료입니다.") +
+    app.innerHTML = head("evidence", "EVIDENCE", "증빙자료", "수치와 성과를 뒷받침하는 자료입니다.") +
       sec('<div class="evs">' + items.map(function (e) {
         var pr = e.project ? byId(e.project) : null;
         return '<a class="evc' + (e.ready ? "" : " pending") + '" href="' + e.href + '"' + (/^http/.test(e.href) ? ' target="_blank" rel="noopener"' : "") + "><b>" + esc(e.title) + "</b><span>" + esc(e.sub) + "</span>" + (pr ? "<i>" + esc(pr.title) + "</i>" : "") + "<em>" + (e.ready ? "열기 →" : "준비 중") + "</em></a>";
@@ -378,8 +373,8 @@
 
   /* ---------- ⑩ 한 장 요약 (인쇄용) ---------- */
   function summary() {
-    document.title = "한 장 요약 | 조예찬";
-    app.innerHTML = '<div class="sheet-bar"><a href="index.html">← 홈으로</a><button type="button" id="prt">인쇄 / PDF 저장</button></div><main class="sheet"><header><h1>' + S.name + '</h1><p>' + S.email + " · " + S.phone + '</p><p class="one">설계하고, 실측으로 검증하고, 안 되면 원인을 다시 정의합니다. RF·전자파, FPGA, 반도체 소자 TCAD, 데이터 · AI 시제품을 직접 수행했습니다.</p></header>' +
+    document.title = "이력서 | 조예찬";
+    app.innerHTML = '<div class="sheet-bar"><a href="index.html">← 홈으로</a><button type="button" id="prt">인쇄 / PDF 저장</button></div><main class="sheet"><header><h1>' + S.name + '</h1><p>' + S.email + " · " + S.phone + '</p></header>' +
       '<h2>핵심 프로젝트</h2>' + P.map(function (p) { return '<div class="si"><b>' + esc(p.title) + "</b> <span>" + esc(p.role) + " · " + p.date + "</span><p>" + esc(p.result) + " <em>(" + p.verify.kinds.map(function (k) { return S.verifyKinds[k].label; }).join(", ") + ")</em></p></div>"; }).join("") +
       '<div class="sc2"><div><h2>경력</h2>' + S.career.map(function (c) { return '<div class="si"><b>' + c.org + "</b> <span>" + c.role + " · " + c.when + "</span></div>"; }).join("") + "<h2>수상</h2>" + S.awards.map(function (a) { return '<div class="si"><b>' + a.title + "</b> <span>" + a.when + "</span></div>"; }).join("") + "</div><div><h2>자격 · 어학</h2>" + S.certs.map(function (c) { return '<div class="si"><b>' + c.name + "</b> <span>" + c.date + "</span></div>"; }).join("") + "<h2>교육 이수</h2>" + S.edu.map(function (e) { return '<div class="si"><b>' + e.title + "</b> <span>" + e.hours + "</span></div>"; }).join("") + "</div></div><p class=\"fine\">학력: 서울과학기술대학교 전기정보공학과 학사 · 학점 3.8/4.5</p></main>";
     $("#prt").addEventListener("click", function () { window.print(); });
@@ -444,10 +439,10 @@
     var tl = {}; P.forEach(function (p) { p.tags.forEach(function (t) { tl[t] = 1; }); });
     Object.keys(tl).forEach(function (t) { a.push({ kind: "도구", t: t, s: "사용 프로젝트 보기", h: "tools.html?tool=" + encodeURIComponent(t), k: t }); });
     S.career.forEach(function (c) { a.push({ kind: "경력", t: c.org, s: c.role + " · " + c.when, h: "experience.html", k: [c.org, c.role, c.body].join(" ") }); });
-    S.awards.forEach(function (c) { a.push({ kind: "수상", t: c.title, s: c.when, h: "activities.html", k: c.title + " " + c.sub }); });
-    a.push({ kind: "활동", t: "대학생 동아리 리더", s: S.club.when, h: "activities.html", k: "동아리 리더 운영진 리더십 " + S.club.body });
-    S.certs.forEach(function (c) { a.push({ kind: "자격", t: c.name, s: c.org + " · " + c.date, h: "credentials.html", k: c.name + " " + c.org }); });
-    S.edu.forEach(function (c) { a.push({ kind: "교육", t: c.title, s: c.when, h: "credentials.html", k: c.title + " " + c.body }); });
+    S.awards.forEach(function (c) { a.push({ kind: "수상", t: c.title, s: c.when, h: "index.html#activities", k: c.title + " " + c.sub }); });
+    a.push({ kind: "활동", t: "대학생 동아리 리더", s: S.club.when, h: "index.html#activities", k: "동아리 리더 운영진 리더십 " + S.club.body });
+    S.certs.forEach(function (c) { a.push({ kind: "자격", t: c.name, s: c.org + " · " + c.date, h: "index.html#credentials", k: c.name + " " + c.org }); });
+    S.edu.forEach(function (c) { a.push({ kind: "교육", t: c.title, s: c.when, h: "index.html#credentials", k: c.title + " " + c.body }); });
     S.evidence.filter(function (e) { return e.ready; }).forEach(function (e) { a.push({ kind: "증빙", t: e.title, s: e.sub, h: "evidence.html", k: e.title + " " + e.sub }); });
     return a;
   }
@@ -509,16 +504,15 @@
     var idx = null, started = false;
 
     var INTENTS = [
-      { re: /이력서|resume|cv|pdf/i, say: "이력서 PDF는 아래 버튼으로 받을 수 있어요.", links: [{ t: "이력서 PDF 다운로드", h: "assets/resume.pdf", dl: true }, { t: "한 장 요약 보기", h: "summary.html" }] },
+      { re: /이력서|resume|cv|pdf/i, say: "이력서 PDF는 아래 버튼으로 받을 수 있어요.", links: [{ t: "이력서 PDF 다운로드", h: "assets/resume.pdf", dl: true }, { t: "이력서 보기", h: "summary.html" }] },
       { re: /연락|이메일|메일|전화|번호|contact/i, say: "연락처는 " + S.email + " 이고, 전화는 " + S.phone + " 입니다.", links: [{ t: "메일 보내기", h: "mailto:" + S.email }] },
-      { re: /자격|면허|기사|토익|한국사|어학|교육|이수|수강/, say: "자격, 어학, 교육 이수는 이 페이지에 모아 두었어요.", links: [{ t: "자격 · 교육 보기", h: "credentials.html" }] },
-      { re: /수상|상장|우수상|장관상|동아리|활동|봉사/, say: "수상과 대외활동은 이 페이지에서 볼 수 있어요.", links: [{ t: "활동 · 수상 보기", h: "activities.html" }] },
+      { re: /자격|면허|기사|토익|한국사|어학|교육|이수|수강/, say: "자격, 어학, 교육 이수는 이 페이지에 모아 두었어요.", links: [{ t: "자격 · 교육 보기", h: "index.html#credentials" }] },
+      { re: /수상|상장|우수상|장관상|동아리|활동|봉사/, say: "수상과 대외활동은 이 페이지에서 볼 수 있어요.", links: [{ t: "활동 · 수상 보기", h: "index.html#activities" }] },
       { re: /경력|인턴|멘토|근무|일해/, say: "경력은 이 페이지에 정리되어 있어요.", links: [{ t: "경력 보기", h: "experience.html" }] },
       { re: /도구|툴|스택|사용 기술|tool/i, say: "도구와 기술은 프로젝트별 표로 정리해 두었어요.", links: [{ t: "도구 매트릭스 보기", h: "tools.html" }] },
       { re: /타임라인|연표|시간순|언제/, say: "시간 순서로 보고 싶다면 이쪽이에요.", links: [{ t: "타임라인 보기", h: "timeline.html" }] },
       { re: /증빙|근거 자료|증명/, say: "증빙 자료는 이 페이지에 모아 두었어요.", links: [{ t: "증빙 보기", h: "evidence.html" }] },
       { re: /원인 재정의|사례|문제 해결/, say: "원인을 다시 정의해 풀어 낸 사례를 모아 둔 페이지예요.", links: [{ t: "사례 보기", h: "cases.html" }] },
-      { re: /소개|누구|자기소개|about/i, say: "소개 페이지에서 일하는 방식과 지향점을 볼 수 있어요.", links: [{ t: "소개 보기", h: "about.html" }] },
       { re: /전체 프로젝트|프로젝트 목록|프로젝트 전체|대표 프로젝트|핵심 프로젝트|프로젝트 보여/, say: "핵심 프로젝트 " + P.length + "개가 목록에 있어요.", links: [{ t: "프로젝트 목록 보기", h: "index.html#projects" }] }
     ];
     var SYN = {
@@ -609,11 +603,11 @@
   }
 
   /* ---------- 시작 ---------- */
-  var R = { home: home, projects: function () { location.replace("index.html#projects"); }, project: legacyProject, about: about, experience: experience, activities: activities, credentials: credentials, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
+  var R = { home: home, projects: function () { location.replace("index.html#projects"); }, project: legacyProject, about: function () { location.replace("index.html"); }, experience: experience, activities: function () { location.replace("index.html#activities"); }, credentials: function () { location.replace("index.html#credentials"); }, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
   (R[page] || home)();
   if (page === "home") {
     jumpToHomeAnchor();
-  } else if (page !== "project" && page !== "projects") {
+  } else if (["project", "projects", "about", "activities", "credentials"].indexOf(page) === -1) {
     applyDomain();
     initBot();
   }
