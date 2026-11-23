@@ -161,7 +161,7 @@
     var gal = sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">' + p.galleryEyebrow + "</div><h2>" + p.galleryTitle + '</h2><div class="gal' + (p.galClass ? " " + p.galClass : "") + '">' + p.gallery.map(function (g) {
       return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '><div class="gph"><img src="assets/img/' + g.src + '" alt="' + esc(g.alt) + '" width="1200" height="800" loading="lazy" onerror="this.remove()"></div><figcaption>' + g.cap + "</figcaption></figure>";
     }).join("") + "</div>" + (p.galleryNote ? '<p class="gnote">' + esc(p.galleryNote) + "</p>" : "") + "</div>", "tight");
-    var qa = sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">Q &amp; A <span class="draft">초안 · 직접 다듬어 주세요</span></div><h2>예상 질문</h2><div class="qa">' + p.qa.map(function (x, i) {
+    var qa = sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">Q &amp; A</div><h2>예상 질문</h2><div class="qa">' + p.qa.map(function (x, i) {
       return "<details" + (i === 0 ? " open" : "") + "><summary>" + esc(x.q) + "</summary><p>" + esc(x.a) + "</p></details>";
     }).join("") + "</div></div>", "tight");
     var end = "";
@@ -387,8 +387,178 @@
   });
   document.addEventListener("click", function (e) { if (e.target.closest("#sbtn")) openSearch(); });
 
+  /* ---------- 스크롤 애니메이션: 수치는 올라가고 막대는 채워집니다 ---------- */
+  function scrollAnim() {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) return;
+    var NUM = /\d[\d,]*(?:\.\d+)?/g;
+    var bars = [].slice.call(document.querySelectorAll(".bar i"));
+    var nums = [].slice.call(document.querySelectorAll(".stat .n, .kpi .n"));
+    bars.forEach(function (i) {
+      i.setAttribute("data-w", i.style.width);
+      i.style.animation = "none";
+      i.style.width = "0";
+      i.classList.add("anim");
+    });
+    nums.forEach(function (el) {
+      var txt = el.textContent, parts = [];
+      txt.replace(NUM, function (m, off) { parts.push({ s: m, off: off, v: parseFloat(m.replace(/,/g, "")), dec: (m.split(".")[1] || "").length, comma: m.indexOf(",") > -1 }); return m; });
+      if (!parts.length) return;
+      el.__a = { txt: txt, parts: parts };
+      el.textContent = fmt(txt, parts, 0);
+    });
+    function fmt(txt, parts, t) {
+      var out = "", last = 0;
+      parts.forEach(function (p) {
+        out += txt.slice(last, p.off);
+        var v = p.v * t, str = v.toFixed(p.dec);
+        if (p.comma) { var a = str.split("."); a[0] = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); str = a.join("."); }
+        out += str; last = p.off + p.s.length;
+      });
+      return out + txt.slice(last);
+    }
+    function countUp(el) {
+      var a = el.__a, t0 = null, dur = 1200;
+      function step(ts) {
+        if (t0 === null) t0 = ts;
+        var k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        el.textContent = fmt(a.txt, a.parts, e);
+        if (k < 1) requestAnimationFrame(step); else el.textContent = a.txt;
+      }
+      requestAnimationFrame(step);
+    }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        io.unobserve(el);
+        if (el.__a) countUp(el);
+        else { el.style.width = el.getAttribute("data-w"); el.classList.add("on"); }
+      });
+    }, { threshold: 0.35 });
+    bars.forEach(function (i) { io.observe(i); });
+    nums.forEach(function (n) { if (n.__a) io.observe(n); });
+  }
+
+  /* ---------- 안내 도우미: 묻는 내용에 맞는 페이지로 안내합니다 (서버 없이 동작하는 규칙 기반) ---------- */
+  function initBot() {
+    var wrap = document.createElement("div");
+    wrap.id = "bot";
+    wrap.innerHTML = '<button type="button" id="bot-fab" aria-label="안내 도우미 열기" aria-expanded="false"><span aria-hidden="true">?</span><b>무엇을 찾으세요?</b></button>' +
+      '<section id="bot-panel" role="dialog" aria-label="안내 도우미" hidden>' +
+      '<header><div><b>안내 도우미</b><small>묻는 내용에 맞는 페이지로 안내해 드려요</small></div><button type="button" id="bot-x" aria-label="닫기">×</button></header>' +
+      '<div id="bot-log" aria-live="polite"></div>' +
+      '<div id="bot-chips"></div>' +
+      '<form id="bot-form"><input id="bot-q" type="text" placeholder="예: FPGA 경험, 이력서, 자격증" autocomplete="off" aria-label="질문 입력"><button type="submit">보내기</button></form>' +
+      "</section>";
+    document.body.appendChild(wrap);
+    var fab = $("#bot-fab"), panel = $("#bot-panel"), log = $("#bot-log"), q = $("#bot-q"), chips = $("#bot-chips");
+    var idx = null, started = false;
+
+    var INTENTS = [
+      { re: /이력서|resume|cv|pdf/i, say: "이력서 PDF는 아래 버튼으로 받을 수 있어요.", links: [{ t: "이력서 PDF 다운로드", h: "assets/resume.pdf", dl: true }, { t: "한 장 요약 보기", h: "summary.html" }] },
+      { re: /연락|이메일|메일|전화|번호|contact/i, say: "연락처는 " + S.email + " 이고, 전화는 " + S.phone + " 입니다.", links: [{ t: "메일 보내기", h: "mailto:" + S.email }] },
+      { re: /자격|면허|기사|토익|한국사|어학|교육|이수|수강/, say: "자격, 어학, 교육 이수는 이 페이지에 모아 두었어요.", links: [{ t: "자격 · 교육 보기", h: "credentials.html" }] },
+      { re: /수상|상장|우수상|장관상|동아리|활동|봉사/, say: "수상과 대외활동은 이 페이지에서 볼 수 있어요.", links: [{ t: "활동 · 수상 보기", h: "activities.html" }] },
+      { re: /경력|인턴|멘토|근무|일해/, say: "경력과 인턴 경험은 이 페이지에 있어요.", links: [{ t: "경력 보기", h: "experience.html" }] },
+      { re: /도구|툴|스택|사용 기술|tool/i, say: "도구와 기술은 프로젝트별 표로 정리해 두었어요.", links: [{ t: "도구 매트릭스 보기", h: "tools.html" }] },
+      { re: /타임라인|연표|시간순|언제/, say: "시간 순서로 보고 싶다면 이쪽이에요.", links: [{ t: "타임라인 보기", h: "timeline.html" }] },
+      { re: /증빙|근거 자료|증명/, say: "증빙 자료는 이 페이지에 모아 두었어요.", links: [{ t: "증빙 보기", h: "evidence.html" }] },
+      { re: /원인 재정의|사례|문제 해결/, say: "원인을 다시 정의해 풀어 낸 사례를 모아 둔 페이지예요.", links: [{ t: "사례 보기", h: "cases.html" }] },
+      { re: /소개|누구|자기소개|about/i, say: "소개 페이지에서 일하는 방식과 지향점을 볼 수 있어요.", links: [{ t: "소개 보기", h: "about.html" }] },
+      { re: /전체 프로젝트|프로젝트 목록|프로젝트 전체|대표 프로젝트|핵심 프로젝트|프로젝트 보여/, say: "핵심 프로젝트 " + P.length + "개가 목록에 있어요.", links: [{ t: "프로젝트 목록 보기", h: "projects.html" }] }
+    ];
+    var SYN = {
+      "안테나": ["fsr", "rasorber", "hfss"], "전파": ["rf", "전자파"], "rf": ["전자파", "fsr"], "흡수": ["fsr", "rasorber"], "pcb": ["fsr"],
+      "fpga": ["verilog", "vivado"], "디지털": ["fpga"], "가속기": ["fpga"],
+      "반도체": ["tcad", "finfet"], "소자": ["tcad", "finfet"], "트랜지스터": ["tcad"],
+      "램프": ["램프", "raspberry"], "음성": ["램프", "deepgram"], "시제품": ["램프"],
+      "세미나": ["토닥"], "부모": ["토닥"], "기획": ["토닥", "태양광"], "운영": ["토닥"],
+      "냉각": ["냉각"], "고장": ["냉각", "예측"], "예지": ["냉각", "예측"], "대시보드": ["dash", "냉각", "태양광"], "dash": ["냉각"],
+      "태양광": ["태양광"], "발전": ["태양광"], "qa": ["태양광"], "테스트": ["태양광"], "supabase": ["태양광"], "next": ["태양광"],
+      "데이터": ["냉각", "태양광", "python"], "ai": ["램프", "냉각"], "파이썬": ["python"]
+    };
+    var STOP = /(해줘|알려줘|보여줘|있어요|있나요|인가요|하나요|주세요|싶어요|에서|으로|에게|은|는|이|가|을|를|에|의|도|로|과|와|요)$/;
+
+    function add(who, html) {
+      var d = document.createElement("div");
+      d.className = "bm " + who;
+      d.innerHTML = html;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+      return d;
+    }
+    function linkHtml(l) {
+      return '<a class="bl" href="' + l.h + '"' + (l.dl ? ' download="조예찬_이력서.pdf"' : "") + ">" + esc(l.t) + (l.s ? "<small>" + esc(l.s) + "</small>" : "") + "</a>";
+    }
+    function tokens(text) {
+      var raw = text.toLowerCase().split(/[\s,.?!·/]+/).filter(Boolean);
+      var out = [];
+      raw.forEach(function (t) {
+        var base = t.length > 2 ? t.replace(STOP, "") : t;
+        if (base.length < 2 && !/^[a-z]+$/.test(base)) return;
+        out.push(base);
+        (SYN[base] || []).forEach(function (s) { out.push(s); });
+      });
+      return out;
+    }
+    function find(text) {
+      if (!idx) idx = buildIndex();
+      var toks = tokens(text);
+      if (!toks.length) return [];
+      var seen = {};
+      return idx.map(function (it) {
+        var hay = (it.t + " " + it.k).toLowerCase(), sc = 0;
+        toks.forEach(function (t) { if (hay.indexOf(t) > -1) sc += t.length > 2 ? 2 : 1; });
+        if (it.kind === "프로젝트") sc += sc ? 1 : 0;
+        return { it: it, sc: sc };
+      }).filter(function (r) { return r.sc > 0; }).sort(function (a, b) { return b.sc - a.sc; }).filter(function (r) {
+        var key = r.it.h; if (seen[key]) return false; seen[key] = 1; return true;
+      }).slice(0, 3).map(function (r) { return r.it; });
+    }
+    function answer(text) {
+      var intent = INTENTS.filter(function (n) { return n.re.test(text); })[0];
+      if (intent) { add("bot", "<p>" + esc(intent.say) + "</p>" + intent.links.map(linkHtml).join("")); return; }
+      var hits = find(text);
+      if (hits.length) {
+        add("bot", "<p>관련 있어 보이는 곳을 찾았어요.</p>" + hits.map(function (it) { return linkHtml({ t: it.t, h: it.h, s: it.kind + (it.s ? " · " + it.s : "") }); }).join(""));
+      } else {
+        add("bot", "<p>정확히 맞는 곳을 찾지 못했어요. 아래 예시처럼 물어보거나 검색(Ctrl+K)을 써 보세요.</p>" + linkHtml({ t: "프로젝트 목록 보기", h: "projects.html" }));
+      }
+    }
+    function ask(text) {
+      text = text.trim();
+      if (!text) return;
+      add("me", esc(text));
+      answer(text);
+    }
+    function start() {
+      if (started) return;
+      started = true;
+      add("bot", "<p>안녕하세요. 찾고 싶은 내용을 알려 주시면 해당 페이지로 안내해 드려요.</p><p class=\"bn\">정해진 규칙으로 안내하는 도우미라 자유로운 대화는 어려워요.</p>");
+      ["이력서", "대표 프로젝트", "FPGA 경험", "태양광 앱", "자격증", "연락처"].forEach(function (c) {
+        var b = document.createElement("button");
+        b.type = "button"; b.textContent = c;
+        b.addEventListener("click", function () { ask(c); });
+        chips.appendChild(b);
+      });
+    }
+    function setOpen(on) {
+      panel.hidden = !on;
+      fab.setAttribute("aria-expanded", on ? "true" : "false");
+      wrap.classList.toggle("open", on);
+      if (on) { start(); q.focus(); }
+    }
+    fab.addEventListener("click", function () { setOpen(panel.hidden); });
+    $("#bot-x").addEventListener("click", function () { setOpen(false); fab.focus(); });
+    panel.addEventListener("keydown", function (e) { if (e.key === "Escape") { setOpen(false); fab.focus(); } });
+    $("#bot-form").addEventListener("submit", function (e) { e.preventDefault(); ask(q.value); q.value = ""; });
+  }
+
   /* ---------- 시작 ---------- */
   var R = { home: home, projects: projectsPage, project: projectPage, about: about, experience: experience, activities: activities, credentials: credentials, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
   (R[page] || home)();
   applyDomain();
+  scrollAnim();
+  initBot();
 })();

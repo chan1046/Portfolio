@@ -180,3 +180,46 @@ code { background: #EEEBFB; border-radius: 6px; padding: 0 6px; font-size: .92em
 /* 홈 첫 화면 제목 */
 .hero h1.hv { font-size: clamp(22px, calc((100vw - 64px) / 13.8), 64px); line-height: 1.22; letter-spacing: -0.03em; margin: 28px 0 20px; }
 .hero .sub { max-width: 760px; margin: 0 0 18px; font-size: clamp(18px, 2.2vw, 28px); font-weight: 800; line-height: 1.45; letter-spacing: -0.02em; color: #fff; }
+
+/* 홈 프로필 사진: 더 크게 */
+.hero .who .avatar { width: clamp(112px, 14vw, 168px); height: clamp(112px, 14vw, 168px); object-position: center 10%; }
+.hero .who { gap: 20px; }
+
+/* 스크롤 진입 시 막대가 채워지는 효과 */
+.bar i.anim { transition: width 1.2s cubic-bezier(.2,.7,.2,1); }
+.bar i.anim + b, .bar i.anim ~ b { opacity: 0; transition: opacity .5s ease 1s; }
+.bar i.anim.on + b, .bar i.anim.on ~ b { opacity: 1; }
+/* 홈 제목과 태그 사이 간격 */
+.hero h1.hv + .lead, .hero h1.hv + .tags-w { margin-top: 8px; }
+.hero .tags-w { margin-top: 28px; }
+
+/* 안내 도우미 */
+#bot { position: fixed; right: 20px; bottom: 20px; z-index: 60; font-family: inherit; }
+#bot-fab { display: flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; padding: 8px 18px 8px 8px; background: #2a2870; color: #fff; box-shadow: 0 14px 34px -10px rgba(20,16,80,.55); cursor: pointer; font: inherit; }
+#bot-fab span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #f3eedf; color: #2a2870; font-weight: 900; font-size: 18px; }
+#bot-fab b { font-size: 15px; font-weight: 800; }
+#bot.open #bot-fab { display: none; }
+#bot-panel { width: min(380px, calc(100vw - 32px)); max-height: min(560px, calc(100vh - 40px)); display: flex; flex-direction: column; background: #fff; border-radius: 22px; box-shadow: 0 30px 80px -20px rgba(20,16,80,.5); overflow: hidden; border: 1.5px solid #e6e3fa; }
+#bot-panel[hidden] { display: none; }
+#bot-panel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 16px 18px; background: #2a2870; color: #fff; }
+#bot-panel header b { display: block; font-size: 16px; font-weight: 900; }
+#bot-panel header small { font-size: 12.5px; opacity: .8; }
+#bot-x { border: 0; background: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+#bot-log { flex: 1; overflow-y: auto; padding: 16px 16px 6px; display: flex; flex-direction: column; gap: 10px; background: #faf9fe; min-height: 160px; }
+.bm { max-width: 92%; padding: 10px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.55; color: #1c1b3a; }
+.bm p { margin: 0 0 6px; } .bm p:last-child { margin-bottom: 0; }
+.bm .bn { font-size: 12.5px; color: #5b5873; }
+.bm.bot { align-self: flex-start; background: #fff; border: 1.5px solid #e6e3fa; }
+.bm.me { align-self: flex-end; background: #3f3b93; color: #fff; }
+.bl { display: block; margin-top: 6px; padding: 8px 12px; border-radius: 12px; background: #f3f1fc; color: #2a2870; font-weight: 800; text-decoration: none; }
+.bl:hover, .bl:focus-visible { background: #e6e3fa; }
+.bl small { display: block; margin-top: 2px; font-weight: 500; font-size: 12.5px; color: #5b5873; }
+#bot-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px 10px; background: #faf9fe; }
+#bot-chips:empty { display: none; }
+#bot-chips button { border: 1.5px solid #cfcaf2; background: #fff; color: #2a2870; border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+#bot-chips button:hover { background: #f3f1fc; }
+#bot-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1.5px solid #ece9f8; background: #fff; }
+#bot-form input { flex: 1; min-width: 0; border: 1.5px solid #cfcaf2; border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14.5px; }
+#bot-form button { border: 0; border-radius: 12px; padding: 0 16px; background: #2a2870; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+@media (max-width: 520px) { #bot { right: 12px; bottom: 12px; } #bot-fab b { display: none; } #bot-fab { padding: 8px; } }
+@media print { #bot { display: none; } }
