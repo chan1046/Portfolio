@@ -149,32 +149,29 @@
       '<a class="btn line" href="#career">경력</a><a class="btn line" href="#activities">활동 및 수상</a>' +
       '<a class="btn line" href="#credentials">자격 및 교육</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
     var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
-      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-grid">' +
-      HOME_PROJECTS.map(function (item) { return projectPreview(byId(item.id), item); }).join("") + '</div></div></section>';
-    var details = '<section class="sec white project-details" aria-labelledby="project-details-title"><div class="wrap">' +
-      '<h2 class="t" id="project-details-title">프로젝트 상세</h2>' +
-      HOME_PROJECTS.map(function (item) { return projectCard(byId(item.id), item); }).join("") + '</div></section>';
+      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-list">' +
+      HOME_PROJECTS.map(function (item) { return projectItem(byId(item.id), item); }).join("") + '</div></div></section>';
     var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
       '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
     var resources = '<nav class="wrap home-resources" aria-label="추가 자료">' +
       '<a href="evidence.html">증빙자료</a><a href="summary.html">이력서</a></nav>';
-    app.innerHTML = hero + '<main>' + projects + details + career + homeRecords() + '</main><footer>' + resources + contact() + '</footer>';
+    app.innerHTML = hero + '<main>' + projects + career + homeRecords() + '</main><footer>' + resources + contact() + '</footer>';
   }
 
-  function homeRecord(title, period, detail) {
-    return '<li class="home-record"><div><strong>' + esc(title) + '</strong>' +
-      (period ? '<span class="home-record-date">' + esc(period) + '</span>' : '') + '</div>' +
-      (detail ? '<p>' + esc(detail) + '</p>' : '') + '</li>';
+  function homeRecord(title, period) {
+    return '<li class="home-record"><strong>' + esc(title) + '</strong>' +
+      (period ? '<span class="home-record-date">' + esc(period) + '</span>' : '') + '</li>';
   }
 
   function homeRecords() {
-    var activities = homeRecord("대학생 동아리 리더", S.club.when, S.club.body) +
-      S.etc.map(function (item) { return homeRecord(item); }).join("");
-    var awards = S.awards.map(function (item) { return homeRecord(item.title, item.when, item.sub); }).join("");
-    var certs = S.certs.map(function (item) { return homeRecord(item.name, item.date, item.org); }).join("");
-    var education = S.edu.map(function (item) {
-      return homeRecord(item.title, item.when, item.hours + " | " + item.body);
-    }).join("");
+    var activities = homeRecord("대학생 동아리 리더", S.club.when) +
+      S.etc.map(function (item) {
+        var entry = /^(.*?) \(([^()]*)\)$/.exec(item);
+        return entry ? homeRecord(entry[1], entry[2]) : homeRecord(item);
+      }).join("");
+    var awards = S.awards.map(function (item) { return homeRecord(item.title, item.when); }).join("");
+    var certs = S.certs.map(function (item) { return homeRecord(item.name, item.date); }).join("");
+    var education = S.edu.map(function (item) { return homeRecord(item.title, item.when); }).join("");
     return '<div class="sec white home-records"><div class="wrap"><div class="home-records-frame">' +
       '<section id="activities" aria-labelledby="activities-title"><h2 class="t" id="activities-title">활동 및 수상</h2>' +
       '<h3>활동</h3><ul>' + activities + '</ul><h3>수상</h3><ul>' + awards + '</ul></section>' +
@@ -183,14 +180,16 @@
       '<div><h3>교육</h3><ul>' + education + '</ul></div></div></section></div></div></div>';
   }
 
-  function projectPreview(p, item) {
+  function projectItem(p, item) {
     var cover = p.gallery.find(function (image) { return image.src === item.cover; });
-    return '<article class="project-preview-card" id="preview-' + p.id + '">' +
-      '<div class="project-preview-media' + (item.photo ? ' is-photo' : '') + '"><img src="assets/img/' + esc(cover.src) +
-      '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></div>' +
-      '<div class="project-preview-body"><h3>' + esc(p.title) + '</h3><p>' + esc(p.date) + '</p>' +
-      '<a class="project-preview-link" href="' + href(p) + '" aria-label="' + esc(p.title + " 상세보기") +
-      '">상세보기</a></div></article>';
+    return '<details class="project-item" id="project-' + p.id + '">' +
+      '<summary class="project-preview-card">' +
+      '<span class="project-preview-media' + (item.photo ? ' is-photo' : '') + '"><img src="assets/img/' + esc(cover.src) +
+      '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></span>' +
+      '<span class="project-preview-body"><strong class="project-preview-title">' + esc(p.title) + '</strong>' +
+      '<span class="project-preview-date">' + esc(p.date) + '</span>' +
+      '<span class="project-preview-action"><span class="project-show">상세보기</span><span class="project-hide">상세 닫기</span></span>' +
+      '</span></summary>' + projectDetail(p, item) + '</details>';
   }
 
   function emphasize(text, phrases) {
@@ -205,25 +204,22 @@
     return html + esc(text.slice(end));
   }
 
-  function projectCard(p, item) {
+  function projectDetail(p, item) {
     var emphasis = PROJECT_EMPHASIS[p.id] || {};
     var story = ["problem", "fix", "result"].map(function (key) {
       var entry = step(p, key);
       return '<div class="project-stage"><dt>' + entry.label + '</dt><dd>' + emphasize(entry.body, emphasis[key] || []) + '</dd></div>';
     }).join("");
-    var id = "project-" + p.id;
     var proof = item.proof ? p.gallery.find(function (g) { return g.src === item.proof; }) : null;
     var featured = proof
       ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
       : "";
-    return '<article class="project-chapter" id="' + id + '" aria-labelledby="' + id + '-title">' +
-      '<header class="project-chapter-header"><h3 id="' + id + '-title">' + esc(p.title) + '</h3>' +
-      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></header>' +
+    return '<div class="project-chapter"><p class="project-meta">' + esc(p.role) + '</p>' +
       '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
       '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
       '<details class="project-evidence"><summary>' + (proof ? "추가 제작 및 검증 자료" : "제작 및 검증 자료") + '</summary>' +
-      projectEvidence(p, proof) + '</details></article>';
+      projectEvidence(p, proof) + '</details></div>';
   }
 
   function galleryButton(g, caption) {
@@ -270,7 +266,9 @@
 
   function jumpToHomeAnchor() {
     var target = document.getElementById(location.hash.slice(1));
-    if (target) target.scrollIntoView({ block: "start" });
+    if (!target) return;
+    if (target.classList.contains("project-item")) target.open = true;
+    target.scrollIntoView({ block: "start" });
   }
 
   function legacyProject() {
