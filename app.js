@@ -95,6 +95,51 @@
     { id: "lamp", label: "따뜻한 말 램프", role: "음성 분석 결과의 LED와 앱 연동" },
     { id: "solar", label: "태양광 설비 관리 앱", role: "시험 데이터 및 테스트 작성" }
   ];
+  var PROJECT_EMPHASIS = {
+    fsr: {
+      do: ["HFSS로 결합 구조를 최적화", "VNA 자유공간 측정에 참여"],
+      problem: ["흡수와 투과 성능이 모두 떨어졌습니다"],
+      fix: ["길이, 간격, 저항값을 조정"],
+      result: ["9~10 GHz에서 흡수율 약 95%", "14~15 GHz에서 투과손실 0.7 dB 이하"]
+    },
+    fpga: {
+      do: ["고정소수점 행렬 곱셈기를 구현"],
+      problem: ["LUT 사용률은 117.97%"],
+      fix: ["처리 유닛(PU)의 출력단으로 옮겨"],
+      result: ["LUT 사용률 42.27%", "MNIST 이미지 10개를 8,210클럭"]
+    },
+    cooling: {
+      do: ["센서 데이터 전처리", "Dash 화면 구현"],
+      problem: ["고장까지 남은 시간을 회귀로 예측", "모두에서 음수"],
+      fix: ["24시간 내 고장 여부를 분류", "약 10만 행씩 읽어"],
+      result: ["장비 20대의 센서 데이터 약 8,219만 행", "오프라인 평가에서 재현율 약 78%"]
+    },
+    tcad: {
+      do: ["MOSFET과 1-Fin, 2-Fin FinFET을 설계"],
+      problem: ["문턱전압(Vth)이 예상한 범위를 벗어났습니다"],
+      fix: ["도핑 농도를 지정한 영역 안에서 일정하게"],
+      result: ["시뮬레이션에서 약 1,167 μA"]
+    },
+    todak: {
+      do: ["부모 대상 세미나를 기획", "사전 설문과 실습 워크북"],
+      problem: ["배운 대화법을 실제 대화 중에 떠올리기 어렵다"],
+      fix: ["음성 분석 결과를 앱과 램프로 알려주는 기능"],
+      result: ["유료 세미나 2회에 총 19명"]
+    },
+    lamp: {
+      do: ["음성 분석 결과를 LED와 앱에 전달"],
+      problem: ["음성 입력이 간헐적으로 누락", "20~30초"],
+      fix: ["고감도 마이크로 교체", "코드와 음성 인식 처리 흐름을 단순화"],
+      result: ["피드백 지연을 20초 이내", "약 35명", "학생 창업 마라톤에서 우수상"]
+    },
+    solar: {
+      do: ["품질 검증(QA), 시험 데이터와 테스트 작성"],
+      problem: ["발전량이 서서히 하락하거나 단위가 잘못 들어오면"],
+      fix: ["15일간 서서히 하락하는 발전량", "kWh와 Wh를 혼동한 값"],
+      result: ["네 가지 시연 시나리오", "대시보드 단계의 자동 테스트 143개"]
+    }
+  };
+
   function home() {
     document.title = "조예찬 | 포트폴리오";
     var hero = '<header class="band home-band"><div class="wrap"><div class="hero home-hero">' +
@@ -118,10 +163,23 @@
     app.innerHTML = hero + '<main>' + projects + career + '</main><footer>' + resources + contact() + '</footer>';
   }
 
+  function emphasize(text, phrases) {
+    var html = "";
+    var end = 0;
+    phrases.forEach(function (phrase) {
+      var start = text.indexOf(phrase, end);
+      if (start === -1) return;
+      html += esc(text.slice(end, start)) + '<strong class="project-key">' + esc(phrase) + '</strong>';
+      end = start + phrase.length;
+    });
+    return html + esc(text.slice(end));
+  }
+
   function projectCard(p, item) {
+    var emphasis = PROJECT_EMPHASIS[p.id] || {};
     var story = ["problem", "fix", "result"].map(function (key) {
-      var item = step(p, key);
-      return '<div class="project-stage"><dt>' + item.label + '</dt><dd>' + esc(item.body) + '</dd></div>';
+      var entry = step(p, key);
+      return '<div class="project-stage"><dt>' + entry.label + '</dt><dd>' + emphasize(entry.body, emphasis[key] || []) + '</dd></div>';
     }).join("");
     var id = "project-" + p.id;
     var proof = item.proof ? p.gallery.find(function (g) { return g.src === item.proof; }) : null;
@@ -131,7 +189,7 @@
     return '<article class="project-chapter" id="' + id + '" aria-labelledby="' + id + '-title">' +
       '<header class="project-chapter-header"><h3 id="' + id + '-title">' + esc(p.title) + '</h3>' +
       '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></header>' +
-      '<p class="project-role"><strong>내 역할</strong><span>' + esc(step(p, "do").body) + '</span></p>' +
+      '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
       '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
       '<details class="project-evidence"><summary>' + (proof ? "추가 제작 및 검증 자료" : "제작 및 검증 자료") + '</summary>' +
