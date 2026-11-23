@@ -86,13 +86,13 @@
 
   /* ---------- 홈과 프로젝트 ---------- */
   var HOME_PROJECTS = [
-    { id: "fsr", cover: "fsr-pcb.jpg", photo: true, proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
-    { id: "fpga", cover: "fpga-util.png", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
-    { id: "cooling", cover: "cooling-real-overview.png", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
-    { id: "tcad", cover: "tcad-idvg.png" },
-    { id: "todak", cover: "todak-poster-1.jpg", description: "부모 말 습관 개선 세미나를 기획하고, 참가자 피드백을 바탕으로 앱과 램프를 구상했습니다." },
-    { id: "lamp", cover: "lamp-booth.jpg", photo: true, description: "부모의 말투를 분석해 LED와 앱으로 피드백을 전하는 시제품입니다." },
-    { id: "solar", cover: "solar-app-dashboard.png", description: "태양광 발전량 이상을 살피고 점검 요청부터 승인과 처리까지 기록하는 앱입니다." }
+    { id: "fsr", area: "RF 설계", cover: "fsr-pcb.jpg", photo: true, description: "흡수층과 투과층을 결합한 구조를 설계하고 PCB를 제작해 측정값을 시뮬레이션과 비교했습니다.", role: "HFSS 구조 최적화, PCB 제작 및 VNA 측정 참여", proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
+    { id: "fpga", area: "디지털 설계", cover: "fpga-util.png", description: "MNIST 이미지 10개를 9,000클럭 안에 처리하도록 가속기의 연산 구조와 자원 배치를 개선했습니다.", role: "고정소수점 행렬 곱셈기 구현 및 코드 검토", result: "최종 LUT 사용률 42.27%, 이미지 10개 8,210클럭", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
+    { id: "cooling", area: "설비 데이터", cover: "cooling-real-overview.png", description: "냉각 설비 20대의 센서 데이터 약 8,219만 행을 처리해 점검 우선순위를 보여주는 대시보드를 구현했습니다.", role: "센서 전처리, 모델 연동 및 Dash 화면 구현", result: "24시간 내 고장 여부 분류, 오프라인 재현율 약 78%", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
+    { id: "tcad", area: "반도체 소자", cover: "tcad-idvg.png", role: "팀장, 소자 설계 및 도핑 조건 조정" },
+    { id: "solar", area: "태양광 설비", cover: "solar-app-dashboard.png", role: "품질 검증, 시험 자료 작성 및 발표" },
+    { id: "lamp", area: "AI 시제품", cover: "lamp-booth.jpg", photo: true, role: "팀장, 음성 분석과 LED·앱 연동" },
+    { id: "todak", area: "프로그램 기획", cover: "todak-poster-1.jpg", role: "팀장, 세미나와 실습 자료 기획" }
   ];
 
   var PROJECT_EMPHASIS = {
@@ -140,27 +140,94 @@
     }
   };
 
+  var HOME_SECTIONS = [
+    ["projects", "프로젝트"],
+    ["career", "경력"],
+    ["activities", "활동 및 수상"],
+    ["credentials", "자격 및 교육"],
+    ["evidence", "증빙자료"],
+    ["contact", "연락처"]
+  ];
+  var HOME_RESUME = "assets/resume.pdf?v=portfolio-3";
+
   function home() {
-    document.title = "조예찬 | 포트폴리오";
-    var hero = '<header class="band home-band"><div class="wrap"><div class="hero home-hero">' +
-      '<div class="home-profile"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="" width="64" height="64">' +
-      '<div><h1>조예찬</h1><p>서울과학기술대학교 전기정보공학과</p></div></div>' +
-      '<nav class="home-links" aria-label="주 메뉴"><a class="btn cream" href="#projects">프로젝트 보기</a>' +
-      '<a class="btn line" href="#career">경력</a><a class="btn line" href="#activities">활동 및 수상</a>' +
-      '<a class="btn line" href="#credentials">자격 및 교육</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
-    var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
-      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-list">' +
-      HOME_PROJECTS.map(function (item) { return projectItem(byId(item.id), item); }).join("") + '</div></div></section>';
-    var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
-      '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
-    var resources = '<nav class="wrap home-resources" aria-label="추가 자료">' +
-      '<a href="evidence.html">증빙자료</a><a href="summary.html">이력서</a></nav>';
-    app.innerHTML = hero + '<main>' + projects + career + homeRecords() + '</main><footer>' + resources + contact() + '</footer>';
+    document.title = "조예찬 | 전기정보공학 포트폴리오";
+    app.innerHTML = '<a class="portfolio-skip" href="#main">본문으로 건너뛰기</a>' + homeProfile() +
+      '<div class="portfolio-layout portfolio-shell">' + homeNavigation() +
+      '<main id="main" class="portfolio-main" tabindex="-1">' +
+      homeProjects() + homeCareer() + homeRecords() + homeEvidence() + homeContact() +
+      '</main></div><footer class="portfolio-footer"><div class="portfolio-shell">' +
+      '<span>' + esc(S.name) + ' 포트폴리오</span><a href="#top">맨 위로</a></div></footer>';
+  }
+
+  function homeProfile() {
+    var primaryCerts = S.certs.filter(function (item) {
+      return ["전기기사", "전기공사기사"].includes(item.name);
+    }).map(function (item) { return esc(item.name); }).join(", ");
+    return '<header id="top" class="portfolio-hero"><div class="portfolio-shell">' +
+      '<div class="portfolio-masthead"><span>전기정보공학 포트폴리오</span><a href="#contact">연락처</a></div>' +
+      '<div class="portfolio-profile">' +
+      '<div class="portfolio-profile-intro"><h1>' + esc(S.name) + '</h1>' +
+      '<p>RF 구조 설계, FPGA 구현, 설비 데이터 분석</p>' +
+      '<div class="portfolio-actions"><a class="portfolio-button primary" href="#projects">프로젝트 보기</a>' +
+      '<a class="portfolio-button" href="' + HOME_RESUME + '" download="조예찬_이력서.pdf">이력서 PDF</a></div></div>' +
+      '<div class="portfolio-profile-facts">' +
+      '<img src="assets/img/profile.jpg?v=20261123" alt="조예찬 프로필 사진" width="92" height="112">' +
+      '<dl><div><dt>학력</dt><dd>서울과학기술대학교<br>전기정보공학과 학사 <span>3.8 / 4.5</span></dd></div>' +
+      '<div><dt>주요 자격</dt><dd>' + primaryCerts + '</dd></div></dl></div></div></div></header>';
+  }
+
+  function homeNavigation() {
+    return '<nav class="portfolio-nav" aria-label="페이지 목차"><p>목차</p>' +
+      HOME_SECTIONS.map(function (section) {
+        return '<a href="#' + section[0] + '">' + section[1] + '</a>';
+      }).join("") + '</nav>';
+  }
+
+  function homeProjects() {
+    var featured = HOME_PROJECTS.slice(0, 3).map(function (item) { return projectItem(byId(item.id), item, true); });
+    var others = HOME_PROJECTS.slice(3).map(function (item) { return projectItem(byId(item.id), item, false); });
+    return '<section class="portfolio-section" id="projects" aria-labelledby="projects-title">' +
+      '<h2 id="projects-title">대표 프로젝트</h2><div class="portfolio-featured">' +
+      featured.join("") + '</div>' +
+      '<h3 class="portfolio-subtitle">추가 프로젝트</h3><div class="portfolio-secondary">' +
+      others.join("") + '</div></section>';
+  }
+
+  function projectItem(p, item, featured) {
+    var cover = p.gallery.find(function (image) { return image.src === item.cover; });
+    var titleId = "project-title-" + p.id;
+    var result = item.result || p.result;
+    return '<article class="portfolio-project' + (featured ? ' is-featured' : '') +
+      '" id="project-' + p.id + '" aria-labelledby="' + titleId + '">' +
+      '<div class="portfolio-project-preview">' +
+      '<div class="portfolio-project-media' + (item.photo ? ' is-photo' : '') +
+      '"><img src="assets/img/' + esc(cover.src) + '" alt="' + esc(cover.alt) +
+      '" width="480" height="300" loading="lazy" decoding="async"></div>' +
+      '<div class="portfolio-project-copy">' +
+      '<p class="portfolio-project-meta"><span>' + esc(item.area) + '</span> <span>' + esc(p.date) + '</span></p>' +
+      '<' + (featured ? 'h3' : 'h4') + ' id="' + titleId + '">' + esc(p.title) + '</' + (featured ? 'h3' : 'h4') + '>' +
+      (featured ? '<p class="portfolio-project-description">' + esc(item.description) + '</p>' : '') +
+      '<p class="portfolio-project-role"><b>역할</b> ' + esc(item.role) + '</p>' +
+      '<p class="portfolio-project-result"><b>결과</b> ' + esc(result) + '</p></div></div>' +
+      '<details class="portfolio-details"><summary><span class="portfolio-open">상세보기</span>' +
+      '<span class="portfolio-close">상세 닫기</span><span class="sr-only"> — ' + esc(p.title) + '</span></summary>' +
+      projectDetail(p, item) + '</details></article>';
+  }
+
+  function homeCareer() {
+    return '<section class="portfolio-section" id="career" aria-labelledby="career-title">' +
+      '<h2 id="career-title">경력</h2><div class="portfolio-career">' +
+      S.career.map(function (item) {
+        return '<article class="portfolio-job"><div class="portfolio-job-meta">' +
+          '<span>' + esc(item.when) + '</span><b>' + esc(item.role) + '</b></div><div>' +
+          '<h3>' + esc(item.org) + '</h3><p>' + esc(item.body) + '</p></div></article>';
+      }).join("") + '</div></section>';
   }
 
   function homeRecord(title, period) {
-    return '<li class="home-record"><strong>' + esc(title) + '</strong>' +
-      (period ? '<span class="home-record-date">' + esc(period) + '</span>' : '') + '</li>';
+    return '<li><strong>' + esc(title) + '</strong>' +
+      (period ? '<span>' + esc(period) + '</span>' : '') + '</li>';
   }
 
   function homeRecords() {
@@ -172,37 +239,81 @@
     var awards = S.awards.map(function (item) { return homeRecord(item.title, item.when); }).join("");
     var certs = S.certs.map(function (item) { return homeRecord(item.name, item.date); }).join("");
     var education = S.edu.map(function (item) { return homeRecord(item.title, item.when); }).join("");
-    return '<div class="sec white home-records"><div class="wrap"><div class="home-records-frame">' +
-      '<section id="activities" aria-labelledby="activities-title"><h2 class="t" id="activities-title">활동 및 수상</h2>' +
+    return '<div class="portfolio-section portfolio-records">' +
+      '<section id="activities" aria-labelledby="activities-title"><h2 id="activities-title">활동 및 수상</h2>' +
       '<h3>활동</h3><ul>' + activities + '</ul><h3>수상</h3><ul>' + awards + '</ul></section>' +
-      '<section id="credentials" aria-labelledby="credentials-title"><h2 class="t" id="credentials-title">자격 및 교육</h2>' +
-      '<div class="home-records-categories"><div><h3>자격 및 어학</h3><ul>' + certs + '</ul></div>' +
-      '<div><h3>교육</h3><ul>' + education + '</ul></div></div></section></div></div></div>';
+      '<section id="credentials" aria-labelledby="credentials-title"><h2 id="credentials-title">자격 및 교육</h2>' +
+      '<h3>자격 및 어학</h3><ul>' + certs + '</ul><h3>교육</h3><ul>' + education + '</ul></section></div>';
   }
 
-  function projectItem(p, item) {
-    var cover = p.gallery.find(function (image) { return image.src === item.cover; });
-    return '<details class="project-item" id="project-' + p.id + '">' +
-      '<summary class="project-preview-card">' +
-      '<strong class="project-preview-title">' + esc(p.title) + '</strong>' +
-      '<span class="project-preview-body"><span class="project-preview-media' + (item.photo ? ' is-photo' : '') +
-      '"><img src="assets/img/' + esc(cover.src) + '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></span>' +
-      '<span class="project-preview-copy"><span class="project-preview-date">' + esc(p.date) + '</span>' +
-      '<span class="project-preview-description">' + esc(item.description || p.summary) + '</span></span></span>' +
-      '<span class="project-preview-action"><span class="project-show">상세보기</span><span class="project-hide">상세 닫기</span></span>' +
-      '</summary>' + projectDetail(p, item) + '</details>';
+  function homeEvidence() {
+    var images = [
+      ["fsr", "fsr-compare.png", "FSR 실측 및 시뮬레이션 결과"],
+      ["fpga", "fpga-util.png", "FPGA 자원 사용률 리포트"],
+      ["fsr", "award-capstone.jpg", "캡스톤디자인 우수상"],
+      ["lamp", "award-startup.jpg", "학생 창업 마라톤 우수상"]
+    ];
+    return '<section class="portfolio-section" id="evidence" aria-labelledby="evidence-title">' +
+      '<h2 id="evidence-title">증빙자료</h2><div class="portfolio-evidence">' +
+      images.map(function (item) {
+        var proof = byId(item[0]).gallery.find(function (image) { return image.src === item[1]; });
+        return galleryButton(proof, '<span>' + esc(item[2]) + '<small>크게 보기</small></span>');
+      }).join("") + '</div><div class="portfolio-file-links"><a href="' + esc(byId("cooling").link.href) +
+      '" target="_blank" rel="noopener">냉각 설비 예측 코드 (GitHub)</a></div></section>';
   }
 
-  function observeProjectMotion() {
+  function homeContact() {
+    return '<section class="portfolio-section" id="contact" aria-labelledby="contact-title">' +
+      '<h2 id="contact-title">연락처</h2><div class="portfolio-contact">' +
+      '<div><a href="mailto:' + esc(S.email) + '">' + esc(S.email) + '</a>' +
+      '<a href="tel:' + esc(S.phone) + '">' + esc(S.phone) + '</a></div>' +
+      '<a class="portfolio-button" href="' + HOME_RESUME + '" download="조예찬_이력서.pdf">이력서 PDF</a>' +
+      '</div></section>';
+  }
+
+  function observePortfolio() {
+    var links = $$(".portfolio-nav a");
+    var sections = links.map(function (link) { return document.getElementById(link.hash.slice(1)); });
+    var active = -1, queued = false;
+    function updateNavigation() {
+      queued = false;
+      var index = -1, lastTop = -Infinity, marker = Math.min(window.innerHeight * .38, 190);
+      var requested = location.hash.slice(1);
+      sections.forEach(function (section, i) {
+        var top = section.getBoundingClientRect().top;
+        if (top <= marker && (top > lastTop || (top === lastTop && section.id === requested))) {
+          index = i;
+          lastTop = top;
+        }
+      });
+      if (window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        index = requested === "evidence" ? sections.length - 2 : sections.length - 1;
+      }
+      if (index === active) return;
+      if (active >= 0) links[active].removeAttribute("aria-current");
+      if (index >= 0) links[index].setAttribute("aria-current", "location");
+      active = index;
+    }
+    function scheduleUpdate() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(updateNavigation);
+    }
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("hashchange", scheduleUpdate);
+    app.addEventListener("toggle", scheduleUpdate, true);
+    updateNavigation();
+
     if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     var observer = new window.IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add("project-arrived");
+        entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { threshold: 0.15 });
-    $$(".project-preview-card").forEach(function (preview) { observer.observe(preview); });
+    }, { threshold: .15 });
+    $$(".portfolio-project.is-featured").forEach(function (project) { observer.observe(project); });
   }
 
   function emphasize(text, phrases) {
@@ -227,7 +338,7 @@
     var featured = proof
       ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
       : "";
-    return '<div class="project-chapter"><p class="project-meta">' + esc(p.role) + '</p>' +
+    return '<div class="project-chapter">' +
       '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
       '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
@@ -280,7 +391,8 @@
   function jumpToHomeAnchor() {
     var target = document.getElementById(location.hash.slice(1));
     if (!target) return;
-    if (target.classList.contains("project-item")) target.open = true;
+    var detail = target.classList.contains("portfolio-project") && $(".portfolio-details", target);
+    if (detail) detail.open = true;
     target.scrollIntoView({ block: "start" });
   }
 
@@ -620,7 +732,7 @@
   if (page === "home") {
     jumpToHomeAnchor();
     window.addEventListener("hashchange", jumpToHomeAnchor);
-    observeProjectMotion();
+    observePortfolio();
   } else if (["project", "projects", "about", "activities", "credentials"].indexOf(page) === -1) {
     applyDomain();
     initBot();
