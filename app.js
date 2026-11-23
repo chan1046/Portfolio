@@ -36,7 +36,7 @@
     return '<section class="contact"><div class="wrap"><div class="cbox"><div><h2>연락처</h2>' +
       '<div class="li">' + S.email + '<button class="copy" type="button" data-copy="' + S.email + '">복사</button></div>' +
       '<div class="li s">' + S.phone + '<button class="copy" type="button" data-copy="' + S.phone + '">복사</button></div></div>' +
-      '<div class="btns"><a class="btn cream" href="mailto:' + S.email + '">메일 보내기</a>' + (extraBtn || '<a class="btn line" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF 다운로드</a>') + "</div></div></div></section>";
+      '<div class="btns"><a class="btn cream" href="mailto:' + S.email + '">메일 보내기</a>' + (extraBtn || '<a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF 다운로드</a>') + "</div></div></div></section>";
   }
   function nextBand(h, label) {
     return '<section class="contact"><div class="wrap"><div class="next"><b>다음 페이지: ' + label + '</b><a class="btn cream" href="' + h + '">보러 가기 →</a></div></div></section>';
@@ -86,16 +86,31 @@
   function fallbackCopy(t) { var a = document.createElement("textarea"); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); } catch (e) { /* 복사 불가 */ } a.remove(); }
 
   /* ---------- 홈과 프로젝트 ---------- */
+  var HOME_PROJECTS = [
+    { id: "fsr", label: "FSR 전파 구조 설계", role: "결합 구조 최적화 및 실측 참여", proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
+    { id: "fpga", label: "FPGA 가속기", role: "고정소수점 행렬 곱셈기 구현", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
+    { id: "cooling", label: "냉각 설비 고장 예측", role: "센서 전처리 및 대시보드 구현", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
+    { id: "tcad", label: "TCAD 반도체 소자 설계", role: "소자 설계 및 도핑 조건 조정" },
+    { id: "todak", label: "토닥 부모 언어 개선", role: "세미나 기획 및 운영" },
+    { id: "lamp", label: "따뜻한 말 램프", role: "음성 분석 결과의 LED와 앱 연동" },
+    { id: "solar", label: "태양광 설비 관리 앱", role: "시험 데이터 및 테스트 작성" }
+  ];
   function home() {
     document.title = "조예찬 | 포트폴리오";
     var hero = '<header class="band home-band"><div class="wrap"><div class="hero home-hero">' +
       '<div class="home-profile"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="" width="64" height="64">' +
       '<div><h1>조예찬</h1><p>서울과학기술대학교 전기정보공학과</p></div></div>' +
-      '<p class="lead">흡수층과 투과층을 결합한 뒤 성능이 떨어지자 구조를 다시 설계하고, 시제품의 흡수율과 투과손실을 측정했습니다. 반도체 설비 프로젝트에서는 장비 20대의 센서 데이터를 처리하고 점검 우선순위를 보여주는 대시보드를 구현했습니다.</p>' +
+      '<p class="lead">RF 시제품을 설계하고 흡수율과 투과손실을 실측했습니다. 반도체 설비 20대의 센서 데이터를 처리해 점검 우선순위를 보여주는 대시보드를 구현했습니다.</p>' +
       '<nav class="home-links" aria-label="주 메뉴"><a class="btn cream" href="#projects">프로젝트 보기</a>' +
-      '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
+      '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf?v=portfolio-3" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
+    var links = HOME_PROJECTS.map(function (item) {
+      return '<li><a href="' + href(byId(item.id)) + '"><strong>' + esc(item.label) + '</strong><span>' + esc(item.role) + '</span></a></li>';
+    }).join("");
     var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
-      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-list">' + P.map(projectCard).join("") + '</div></div></section>';
+      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-workspace">' +
+      '<nav class="project-index" aria-label="프로젝트 목록"><ul>' + links + '</ul></nav>' +
+      '<div class="project-list">' + HOME_PROJECTS.map(function (item) { return projectCard(byId(item.id), item); }).join("") +
+      '</div></div></div></section>';
     var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
       '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
     var resources = '<nav class="wrap home-resources" aria-label="추가 자료"><a href="about.html">소개</a><a href="activities.html">활동 및 수상</a>' +
@@ -103,28 +118,37 @@
     app.innerHTML = hero + '<main>' + projects + career + '</main><footer>' + resources + contact() + '</footer>';
   }
 
-  function projectCard(p) {
+  function projectCard(p, item) {
     var story = ["problem", "fix", "result"].map(function (key) {
       var item = step(p, key);
       return '<div class="project-stage"><dt>' + item.label + '</dt><dd>' + esc(item.body) + '</dd></div>';
     }).join("");
-    var role = '<p class="project-role"><strong>내 역할</strong> ' + esc(step(p, "do").body) + '</p>';
-    var validation = '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>';
-    return '<details class="project-entry" id="project-' + p.id + '" name="portfolio-projects"><summary class="project-trigger">' +
-      '<span class="project-preview"><strong>' + esc(p.title) + '</strong><span>' + esc(p.result) + '</span></span>' +
-      '<span class="project-toggle" aria-hidden="true"></span></summary>' +
-      '<div class="project-body"><div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div>' +
-      role + '<dl class="project-story">' + story + '</dl>' + validation +
-      '<details class="project-evidence"><summary>제작 및 검증 자료</summary>' + projectEvidence(p) +
-      '</details></div></details>';
+    var id = "project-" + p.id;
+    var proof = item.proof ? p.gallery.find(function (g) { return g.src === item.proof; }) : null;
+    var featured = proof
+      ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
+      : "";
+    return '<article class="project-chapter" id="' + id + '" aria-labelledby="' + id + '-title">' +
+      '<header class="project-chapter-header"><h3 id="' + id + '-title">' + esc(p.title) + '</h3>' +
+      '<div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div></header>' +
+      '<p class="project-role"><strong>내 역할</strong><span>' + esc(step(p, "do").body) + '</span></p>' +
+      '<dl class="project-story">' + story + '</dl>' +
+      '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
+      '<details class="project-evidence"><summary>' + (proof ? "추가 제작 및 검증 자료" : "제작 및 검증 자료") + '</summary>' +
+      projectEvidence(p, proof) + '</details></article>';
   }
 
-  function projectEvidence(p) {
+  function galleryButton(g, caption) {
+    return '<button class="gph-button ' + (caption ? "proof-button" : "gph") + '" type="button" aria-label="' + esc(g.alt + " 크게 보기") +
+      '"><img src="assets/img/' + g.src + '" alt="' + esc(g.alt) + '" width="1200" height="800" loading="lazy">' + (caption || "") + '</button>';
+  }
+
+  function projectEvidence(p, featured) {
     var gallery = '<div class="gal' + (p.galClass ? " " + p.galClass : "") + '">' + p.gallery.filter(function (g) {
-      return g.src !== "cooling-metrics.svg";
+      return g !== featured && g.src !== "cooling-metrics.svg";
     }).map(function (g) {
-      return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '><button class="gph gph-button" type="button" aria-label="' + esc(g.alt + " 크게 보기") +
-        '"><img src="assets/img/' + g.src + '" alt="' + esc(g.alt) + '" width="1200" height="800" loading="lazy"></button><figcaption>' + esc(g.cap) + '</figcaption></figure>';
+      return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '>' + galleryButton(g) +
+        '<figcaption>' + esc(g.cap) + '</figcaption></figure>';
     }).join("") + '</div>';
     var link = p.link ? '<a class="btn dark-line" href="' + p.link.href + '" target="_blank" rel="noopener">' + esc(p.link.label.replace(/\s*→$/, "")) + '</a>' : "";
     var qa = '<div class="qa"><h4>예상 질문</h4>' + p.qa.map(function (item) {
@@ -156,17 +180,47 @@
     return [redefine, pipeline, issues].map(function (content) { return sec(content, "tight"); }).join("");
   }
 
-  function openProjectFromHash() {
+  function jumpToHomeAnchor() {
     var id = location.hash.slice(1);
-    if (id === "projects" || id === "career") {
-      document.getElementById(id).scrollIntoView({ block: "start" });
-      return;
+    if (id !== "projects" && id !== "career" && id.indexOf("project-") !== 0) return;
+    var target = document.getElementById(id);
+    if (target) target.scrollIntoView({ block: "start" });
+  }
+
+  function initProjectIndex() {
+    var chapters = $$(".project-chapter");
+    var links = $$(".project-index a");
+    var active = -1;
+    var pending = false;
+
+    function update() {
+      pending = false;
+      var current = 0;
+      var readingLine = window.innerHeight * 0.35;
+      for (var i = 1; i < chapters.length; i++) {
+        if (chapters[i].getBoundingClientRect().top <= readingLine) current = i;
+        else break;
+      }
+      if (active === current) return;
+      if (active !== -1) {
+        chapters[active].classList.remove("is-current");
+        links[active].removeAttribute("aria-current");
+      }
+      chapters[current].classList.add("is-current");
+      links[current].setAttribute("aria-current", "location");
+      active = current;
     }
-    if (id.indexOf("project-") !== 0) return;
-    var entry = document.getElementById(id);
-    if (!entry || !entry.classList.contains("project-entry")) return;
-    entry.open = true;
-    entry.scrollIntoView({ block: "start" });
+
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    $(".project-list").addEventListener("toggle", schedule, true);
+    schedule();
   }
 
   function legacyProject() {
@@ -382,7 +436,7 @@
     var target = e.target.closest("a");
     if (!target) return;
     sdlg.close();
-    if (page === "home" && target.getAttribute("href") === location.hash) openProjectFromHash();
+    if (page === "home" && target.getAttribute("href") === location.hash) jumpToHomeAnchor();
   });
   $("#sx", sdlg).addEventListener("click", function () { sdlg.close(); });
   sdlg.addEventListener("click", function (e) { if (e.target === sdlg) sdlg.close(); });
@@ -392,7 +446,7 @@
     else if (e.key === "Enter" && sList[sSel]) {
       e.preventDefault();
       sdlg.close();
-      if (page === "home" && sList[sSel].h === location.hash) openProjectFromHash();
+      if (page === "home" && sList[sSel].h === location.hash) jumpToHomeAnchor();
       else location.href = sList[sSel].h;
     }
   });
@@ -529,8 +583,8 @@
   var R = { home: home, projects: function () { location.replace("index.html#projects"); }, project: legacyProject, about: about, experience: experience, activities: activities, credentials: credentials, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
   (R[page] || home)();
   if (page === "home") {
-    openProjectFromHash();
-    window.addEventListener("hashchange", openProjectFromHash);
+    jumpToHomeAnchor();
+    initProjectIndex();
   } else if (page !== "project" && page !== "projects") {
     applyDomain();
     initBot();
