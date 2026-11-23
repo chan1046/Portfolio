@@ -90,9 +90,9 @@
     { id: "fpga", cover: "fpga-util.png", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
     { id: "cooling", cover: "cooling-real-overview.png", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
     { id: "tcad", cover: "tcad-idvg.png" },
-    { id: "todak", cover: "todak-poster-1.jpg" },
-    { id: "lamp", cover: "lamp-booth.jpg", photo: true },
-    { id: "solar", cover: "solar-app-dashboard.png" }
+    { id: "todak", cover: "todak-poster-1.jpg", description: "부모 말 습관 개선 세미나를 기획하고, 참가자 피드백을 바탕으로 앱과 램프를 구상했습니다." },
+    { id: "lamp", cover: "lamp-booth.jpg", photo: true, description: "부모의 말투를 분석해 LED와 앱으로 피드백을 전하는 시제품입니다." },
+    { id: "solar", cover: "solar-app-dashboard.png", description: "태양광 발전량 이상을 살피고 점검 요청부터 승인과 처리까지 기록하는 앱입니다." }
   ];
 
   var PROJECT_EMPHASIS = {
@@ -184,12 +184,25 @@
     var cover = p.gallery.find(function (image) { return image.src === item.cover; });
     return '<details class="project-item" id="project-' + p.id + '">' +
       '<summary class="project-preview-card">' +
-      '<span class="project-preview-media' + (item.photo ? ' is-photo' : '') + '"><img src="assets/img/' + esc(cover.src) +
-      '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></span>' +
-      '<span class="project-preview-body"><strong class="project-preview-title">' + esc(p.title) + '</strong>' +
-      '<span class="project-preview-date">' + esc(p.date) + '</span>' +
+      '<strong class="project-preview-title">' + esc(p.title) + '</strong>' +
+      '<span class="project-preview-body"><span class="project-preview-media' + (item.photo ? ' is-photo' : '') +
+      '"><img src="assets/img/' + esc(cover.src) + '" alt="' + esc(cover.alt) + '" width="640" height="360" loading="lazy"></span>' +
+      '<span class="project-preview-copy"><span class="project-preview-date">' + esc(p.date) + '</span>' +
+      '<span class="project-preview-description">' + esc(item.description || p.summary) + '</span></span></span>' +
       '<span class="project-preview-action"><span class="project-show">상세보기</span><span class="project-hide">상세 닫기</span></span>' +
-      '</span></summary>' + projectDetail(p, item) + '</details>';
+      '</summary>' + projectDetail(p, item) + '</details>';
+  }
+
+  function observeProjectMotion() {
+    if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var observer = new window.IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("project-arrived");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.15 });
+    $$(".project-preview-card").forEach(function (preview) { observer.observe(preview); });
   }
 
   function emphasize(text, phrases) {
@@ -607,6 +620,7 @@
   if (page === "home") {
     jumpToHomeAnchor();
     window.addEventListener("hashchange", jumpToHomeAnchor);
+    observeProjectMotion();
   } else if (["project", "projects", "about", "activities", "credentials"].indexOf(page) === -1) {
     applyDomain();
     initBot();
