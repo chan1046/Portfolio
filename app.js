@@ -103,7 +103,7 @@
 
   function home() {
     document.title = "조예찬 | 포트폴리오";
-    var hero = '<header class="band">' + DECO + '<div class="wrap">' + top("home") + '<div class="hero"><div class="who"><img class="avatar" src="assets/img/profile.jpg" alt="조예찬 프로필 사진" width="88" height="88" onerror="this.style.display=\'none\'"><div><b>' + S.name + '</b><span class="pill-o">전기정보공학 학사 · 서울과학기술대학교</span></div></div>' +
+    var hero = '<header class="band">' + DECO + '<div class="wrap">' + top("home") + '<div class="hero"><div class="who"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="조예찬 프로필 사진" width="88" height="88" onerror="this.style.display=\'none\'"><div><b>' + S.name + '</b><span class="pill-o">전기정보공학 학사 · 서울과학기술대학교</span></div></div>' +
       "<h1 class=\"hv\">저의 기술과 역량으로 누군가를<br>돕고 살리는 사람이 되고 싶습니다</h1>" +
       '<div class="tags-w">' + S.heroTags.map(function (t) { return "<span>" + t + "</span>"; }).join("") + "</div>" +
       '<div class="btns"><a class="btn cream" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF 다운로드</a><a class="btn line" href="projects.html">프로젝트 보기 →</a></div></div></div></header>';
