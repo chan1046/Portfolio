@@ -89,6 +89,7 @@
     { id: "fsr", area: "RF 설계", cover: "fsr-pcb.jpg", photo: true, description: "흡수층과 투과층을 결합한 구조를 설계하고 PCB를 제작해 측정값을 시뮬레이션과 비교했습니다.", role: "HFSS 구조 최적화, PCB 제작 및 VNA 측정 참여", proof: "fsr-compare.png", proofLabel: "FSR 실측 및 시뮬레이션 비교" },
     { id: "fpga", area: "디지털 설계", cover: "fpga-util.png", description: "MNIST 이미지 10개를 9,000클럭 안에 처리하도록 가속기의 연산 구조와 자원 배치를 개선했습니다.", role: "고정소수점 행렬 곱셈기 구현 및 코드 검토", result: "최종 LUT 사용률 42.27%, 이미지 10개 8,210클럭", proof: "fpga-util.png", proofLabel: "Vivado 자원 사용률 리포트" },
     { id: "cooling", area: "설비 데이터", cover: "cooling-real-overview.png", description: "냉각 설비 20대의 센서 데이터 약 8,219만 행을 처리해 점검 우선순위를 보여주는 대시보드를 구현했습니다.", role: "센서 전처리, 모델 연동 및 Dash 화면 구현", result: "24시간 내 고장 여부 분류, 오프라인 재현율 약 78%", proof: "cooling-real-priority.png", proofLabel: "설비 점검 우선순위 화면" },
+    { id: "voicefishing", area: "피싱 대응 훈련", cover: "voicefishing-dashboard.png", role: "4인 팀, 체험 웹앱 개발 및 Supabase 연동" },
     { id: "tcad", area: "반도체 소자", cover: "tcad-idvg.png", role: "팀장, 소자 설계 및 도핑 조건 조정" },
     { id: "solar", area: "태양광 설비", cover: "solar-app-dashboard.png", role: "품질 검증, 시험 자료 작성 및 발표" },
     { id: "lamp", area: "AI 시제품", cover: "lamp-booth.jpg", photo: true, role: "팀장, 음성 분석과 LED·앱 연동" },
@@ -338,10 +339,12 @@
     var featured = proof
       ? '<div class="project-proof">' + galleryButton(proof, '<span>' + esc(item.proofLabel) + '<small>크게 보기</small></span>') + '</div>'
       : "";
+    var link = p.link ? '<div class="project-proof"><a class="btn dark-line" href="' + esc(p.link.href) +
+      '" target="_blank" rel="noopener">' + esc(p.link.label.replace(/\s*→$/, "")) + '</a></div>' : "";
     return '<div class="project-chapter">' +
       '<p class="project-role"><strong>내 역할</strong><span>' + emphasize(step(p, "do").body, emphasis.do || []) + '</span></p>' +
       '<dl class="project-story">' + story + '</dl>' +
-      '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + featured +
+      '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>' + link + featured +
       '<details class="project-evidence"><summary>' + (proof ? "추가 제작 및 검증 자료" : "제작 및 검증 자료") + '</summary>' +
       projectEvidence(p, proof) + '</details></div>';
   }
@@ -358,7 +361,6 @@
       return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '>' + galleryButton(g) +
         '<figcaption>' + esc(g.cap) + '</figcaption></figure>';
     }).join("") + '</div>';
-    var link = p.link ? '<a class="btn dark-line" href="' + p.link.href + '" target="_blank" rel="noopener">' + esc(p.link.label.replace(/\s*→$/, "")) + '</a>' : "";
     var qa = '<div class="qa"><h4>예상 질문</h4>' + p.qa.map(function (item) {
       return '<details><summary>' + esc(item.q) + '</summary><p>' + esc(item.a) + '</p></details>';
     }).join("") + '</div>';
@@ -367,7 +369,7 @@
     }).join("") + '</ul></div>' : "";
     return '<div class="project-evidence-body"><h4>' + esc(p.galleryTitle) + '</h4>' + gallery +
       (p.galleryNote ? '<p class="gnote">' + esc(p.galleryNote) + '</p>' : "") + projectTechnicalNotes(p) + limits + qa +
-      '<div class="btns">' + link + '<button class="btn dark-line" type="button" data-present="' + p.id + '">발표 모드</button></div></div>';
+      '<div class="btns"><button class="btn dark-line" type="button" data-present="' + p.id + '">발표 모드</button></div></div>';
   }
 
   function projectTechnicalNotes(p) {
