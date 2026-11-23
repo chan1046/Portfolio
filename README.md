@@ -3,6 +3,7 @@
 다른 노트북이나 새 Claude 세션에서 이어서 작업할 때 이 파일을 먼저 읽으세요.
 
 ## 실행 방법
+- https://chan1046.github.io/Portfolio/index.html
 - `index.html`을 더블클릭하면 됩니다. 서버와 DB는 필요 없습니다.
 - 글꼴(Google Fonts)은 인터넷이 있으면 불러오고, 없으면 맑은 고딕으로 대체됩니다.
 
