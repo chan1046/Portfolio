@@ -15,9 +15,9 @@
   var P = S.projects;
   var byId = function (id) { return P.filter(function (p) { return p.id === id; })[0]; };
   var domLabel = function (id) { var d = S.domains.filter(function (x) { return x.id === id; })[0]; return d ? d.label : id; };
-  var href = function (p) { return "project.html?id=" + p.id; };
+  var href = function (p) { return (page === "home" ? "" : "index.html") + "#project-" + p.id; };
 
-  var NAV = [["index.html", "홈", "home"], ["projects.html", "프로젝트", "projects"], ["about.html", "소개", "about"], ["experience.html", "경력", "experience"], ["activities.html", "활동·수상", "activities"], ["credentials.html", "자격·교육", "credentials"]];
+  var NAV = [["index.html", "홈", "home"], ["index.html#projects", "프로젝트", "projects"], ["about.html", "소개", "about"], ["experience.html", "경력", "experience"], ["activities.html", "활동·수상", "activities"], ["credentials.html", "자격·교육", "credentials"]];
   var MORE = [["cases.html", "원인 재정의 사례 모음", "cases"], ["tools.html", "도구 · 프로젝트 매트릭스", "tools"], ["timeline.html", "타임라인", "timeline"], ["evidence.html", "증빙 모아보기", "evidence"], ["summary.html", "한 장 요약 (인쇄용)", "summary"]];
 
   /* ---------- 공통 조각 ---------- */
@@ -33,7 +33,7 @@
     return '<header class="band"><div class="wrap">' + top(active) + '<div class="pagehead"><div class="eyebrow">' + eyebrow + "</div><h1>" + title + "</h1>" + (desc ? "<p>" + desc + "</p>" : "") + "</div></div></header>";
   }
   function contact(extraBtn) {
-    return '<section class="contact"><div class="wrap"><div class="cbox"><div><div class="eyebrow">CONTACT</div><h2>함께 이야기해요</h2>' +
+    return '<section class="contact"><div class="wrap"><div class="cbox"><div><h2>연락처</h2>' +
       '<div class="li">' + S.email + '<button class="copy" type="button" data-copy="' + S.email + '">복사</button></div>' +
       '<div class="li s">' + S.phone + '<button class="copy" type="button" data-copy="' + S.phone + '">복사</button></div></div>' +
       '<div class="btns"><a class="btn cream" href="mailto:' + S.email + '">메일 보내기</a>' + (extraBtn || '<a class="btn line" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF 다운로드</a>') + "</div></div></div></section>";
@@ -45,7 +45,6 @@
     if (!p.verify) return "";
     return '<span class="vbs">' + p.verify.kinds.map(function (k) { var v = S.verifyKinds[k]; return '<span class="vb ' + v.tone + '">' + v.label + "</span>"; }).join("") + "</span>";
   }
-  function dtags(p) { return '<div class="dtags">' + p.d.map(function (d) { return "<i>" + domLabel(d) + "</i>"; }).join("") + "</div>"; }
   function tagRow(tags) { return '<div class="tg">' + tags.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>"; }
   function sec(inner, cls) { return '<section class="sec ' + (cls || "") + '"><div class="wrap">' + inner + "</div></section>"; }
 
@@ -55,10 +54,6 @@
   function domChips() {
     return '<div class="chips" role="group" aria-label="직무 선택"><button class="chip" type="button" data-dom="all">전체</button>' +
       S.domains.map(function (d) { return '<button class="chip" type="button" data-dom="' + d.id + '">' + d.label + "</button>"; }).join("") + "</div>";
-  }
-  function domSection() {
-    return '<section class="dom"><div class="wrap"><div class="dom-box"><div class="eyebrow dark">FOR INTERVIEWER</div><h2>어떤 직무를 보고 계신가요?</h2>' + domChips() +
-      '<div class="dom-out" id="domout" aria-live="polite"></div></div></div></section>';
   }
   function domMini() { return '<div class="dom-mini">' + domChips() + '<div class="dom-out" id="domout" aria-live="polite" style="margin-top:16px"></div></div>'; }
   function applyDomain() {
@@ -90,91 +85,93 @@
   });
   function fallbackCopy(t) { var a = document.createElement("textarea"); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); } catch (e) { /* 복사 불가 */ } a.remove(); }
 
-  /* ---------- 페이지 ---------- */
-  var DECO = '<svg class="deco" viewBox="0 0 120 1000" preserveAspectRatio="none" aria-hidden="true"><defs><filter id="rough" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.035 0.012" numOctaves="3" seed="4" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="70"/></filter></defs><rect x="10" y="0" width="100" height="1000" rx="50" fill="#F3EEDF" filter="url(#rough)"/></svg>';
-
-  function statCard(s) {
-    var bars = s.bars.map(function (b) {
-      return '<div class="bar"><i class="' + (b.c === "pass" ? "" : b.c) + '" style="width:' + b.w + '%"></i>' + (b.mark ? '<b class="' + (b.mc === "over" ? "over" : "") + '" style="left:' + b.mark + '%"></b>' : "") + "</div>";
-    }).join("");
-    return '<div class="stat" data-d="' + s.d.join(" ") + '"><div class="n">' + s.n + '</div><div class="l">' + s.l + "</div>" + bars +
-      '<div class="axis"><span>0</span>' + (s.note ? '<em class="' + (s.noteC === "over" ? "over" : "") + '">' + s.note + "</em>" : "") + "<span>" + s.max + "</span></div></div>";
-  }
-
+  /* ---------- 홈과 프로젝트 ---------- */
   function home() {
     document.title = "조예찬 | 포트폴리오";
-    var hero = '<header class="band">' + DECO + '<div class="wrap">' + top("home") + '<div class="hero"><div class="who"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="조예찬 프로필 사진" width="88" height="88" onerror="this.style.display=\'none\'"><div><b>' + S.name + '</b><span class="pill-o">전기정보공학 학사 · 서울과학기술대학교</span></div></div>' +
-      "<h1 class=\"hv\">저의 기술과 역량으로 누군가를<br>돕고 살리는 사람이 되고 싶습니다</h1>" +
-      '<div class="tags-w">' + S.heroTags.map(function (t) { return "<span>" + t + "</span>"; }).join("") + "</div>" +
-      '<div class="btns"><a class="btn cream" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF 다운로드</a><a class="btn line" href="projects.html">프로젝트 보기 →</a></div></div></div></header>';
-    var loop = sec('<div class="eyebrow dark">HOW I WORK</div><h2 class="t">작업 방식</h2><p class="lead2">설계 결과를 시뮬레이션과 실측으로 검증하고, 목표에 못 미치면 원인을 다시 정의해 설계로 돌아갑니다.</p>' +
-      '<div class="loop"><div class="loop-g">' + S.loop.map(function (n, i) { return "<div" + (i === S.loop.length - 1 ? ' class="last"' : "") + ">" + n + "</div>"; }).join("") + '</div><div class="back"></div><div class="cap">목표 미달 → 원인 재정의 → 설계 복귀</div></div>');
-    var stats = sec('<div class="eyebrow dark">KEY RESULTS</div><h2 class="t" style="margin-bottom:48px">숫자로 보는 검증 결과</h2><div class="stats">' + S.stats.map(statCard).join("") + "</div>", "tight");
-    var list = sec('<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:48px"><div><div class="eyebrow dark">PROJECTS</div><h2 class="t" style="margin-bottom:0">핵심 프로젝트 ' + P.length + '개</h2></div><a class="btn dark-line" href="projects.html">전체 보기 →</a></div><div class="plist">' +
-      P.map(function (p) { return '<a class="prow" data-d="' + p.d.join(" ") + '" href="' + href(p) + '"><div class="no">' + p.no + '</div><div class="tt"><b>' + esc(p.title) + "</b><span>" + esc(p.role) + " · " + p.date + "</span> " + vb(p) + '</div><div class="rs">' + esc(p.result) + '</div><div class="ar">→</div></a>'; }).join("") + "</div>", "white");
-    var more = sec('<div class="eyebrow dark">MORE</div><h2 class="t" style="margin-bottom:48px">더 알아보기</h2><div class="mgrid">' +
-      [["about.html", "소개", "예찬적 사고"], ["cases.html", "원인 재정의 사례", "문제 → 원인 → 결과 한눈에"], ["timeline.html", "타임라인", "2020~2026 전체 이력"], ["tools.html", "도구 매트릭스", "어떤 도구를 어디에 썼는지"], ["evidence.html", "증빙 모아보기", "코드, 포스터, 수상"], ["summary.html", "한 장 요약", "인쇄해서 볼 수 있는 요약"]]
-        .map(function (m) { return '<a class="mcard" href="' + m[0] + '"><div><b>' + m[1] + "</b><span>" + m[2] + "</span></div><em>보기 →</em></a>"; }).join("") + "</div>");
-    app.innerHTML = hero + domSection() + loop + stats + list + more + contact();
+    var hero = '<header class="band home-band"><div class="wrap"><div class="hero home-hero">' +
+      '<div class="home-profile"><img class="avatar" src="assets/img/profile.jpg?v=20261123" alt="" width="64" height="64">' +
+      '<div><h1>조예찬</h1><p>서울과학기술대학교 전기정보공학과</p></div></div>' +
+      '<p class="lead">흡수층과 투과층을 결합한 뒤 성능이 떨어지자 구조를 다시 설계하고, 시제품의 흡수율과 투과손실을 측정했습니다. 반도체 설비 프로젝트에서는 장비 20대의 센서 데이터를 처리하고 점검 우선순위를 보여주는 대시보드를 구현했습니다.</p>' +
+      '<nav class="home-links" aria-label="주 메뉴"><a class="btn cream" href="#projects">프로젝트 보기</a>' +
+      '<a class="btn line" href="#career">경력</a><a class="btn line" href="assets/resume.pdf" download="조예찬_이력서.pdf">이력서 PDF</a></nav></div></div></header>';
+    var projects = '<section class="sec white home-projects" id="projects" aria-labelledby="projects-title"><div class="wrap">' +
+      '<h2 class="t" id="projects-title">프로젝트</h2><div class="project-list">' + P.map(projectCard).join("") + '</div></div></section>';
+    var career = '<section class="sec home-career" id="career" aria-labelledby="career-title"><div class="wrap">' +
+      '<h2 class="t" id="career-title">경력</h2>' + careerRows("h3") + '</div></section>';
+    var resources = '<nav class="wrap home-resources" aria-label="추가 자료"><a href="about.html">소개</a><a href="activities.html">활동 및 수상</a>' +
+      '<a href="credentials.html">자격 및 교육</a><a href="evidence.html">증빙 모아보기</a><a href="summary.html">한 장 요약</a></nav>';
+    app.innerHTML = hero + '<main>' + projects + career + '</main><footer>' + resources + contact() + '</footer>';
   }
 
-  function cover(p) { return { fsr: "fsr-meas.png", cooling: "cooling-real-priority.png" }[p.id] || p.gallery[0].src; }
-  function projectsPage() {
-    document.title = "프로젝트 | 조예찬";
-    app.innerHTML = head("projects", "PROJECTS", "핵심 프로젝트", "각 프로젝트는 문제, 원인 판단, 해결, 결과 순서로 읽을 수 있습니다.") +
-      sec(domMini() + '<div class="cards">' + P.map(function (p, i) {
-        var dark = i % 3 === 0 || i === 3;
-        return '<a class="card ' + (dark ? "dark" : "") + '" data-d="' + p.d.join(" ") + '" href="' + href(p) + '"><div class="ph"><img class="fit" src="assets/img/' + cover(p) + '" alt="' + esc(p.title) + ' 대표 이미지" width="1200" height="750" loading="lazy" onerror="this.remove()"></div><div class="bd">' +
-          '<div class="meta"><span class="no">' + p.no + '</span><span class="role">' + esc(p.role) + '</span><span class="dt">' + p.date + "</span></div><h2>" + esc(p.title) + "</h2><p>" + esc(p.summary) + "</p>" + vb(p) +
-          '<div class="res">' + esc(p.result) + "</div>" + tagRow(p.tags) + dtags(p) + '<div class="more">자세히 보기 →</div></div></a>';
-      }).join("") + "</div>") + contact();
+  function projectCard(p) {
+    var story = ["problem", "fix", "result"].map(function (key) {
+      var item = step(p, key);
+      return '<div class="project-stage"><dt>' + item.label + '</dt><dd>' + esc(item.body) + '</dd></div>';
+    }).join("");
+    var role = '<p class="project-role"><strong>내 역할</strong> ' + esc(step(p, "do").body) + '</p>';
+    var validation = '<p class="project-verify"><strong>검증 범위</strong> ' + esc(p.verify.note) + '</p>';
+    return '<details class="project-entry" id="project-' + p.id + '" name="portfolio-projects"><summary class="project-trigger">' +
+      '<span class="project-preview"><strong>' + esc(p.title) + '</strong><span>' + esc(p.result) + '</span></span>' +
+      '<span class="project-toggle" aria-hidden="true"></span></summary>' +
+      '<div class="project-body"><div class="project-meta"><span>' + esc(p.role) + '</span><span>' + esc(p.date) + '</span></div>' +
+      role + '<dl class="project-story">' + story + '</dl>' + validation +
+      '<details class="project-evidence"><summary>제작 및 검증 자료</summary>' + projectEvidence(p) +
+      '</details></div></details>';
   }
 
-  /* ---------- 프로젝트 상세 ---------- */
-  function projectPage() {
-    var id = new URLSearchParams(location.search).get("id");
-    var p = byId(id) || P[0];
-    var idx = P.indexOf(p), prev = P[(idx + P.length - 1) % P.length], next = P[(idx + 1) % P.length];
-    document.title = p.title + " | 조예찬";
-    var c = p.contrib;
-    var headHtml = '<header class="band"><div class="wrap">' + top("projects") + '<div class="dhead"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span class="role">' + esc(p.role) + '</span><span class="sub">' + (p.subtitle || p.date) + "</span></div><h1>" + p.titleHtml + "</h1><p>" + esc(p.summary) + "</p>" + tagRow(p.tags) +
-      '<div class="btns" style="margin-top:28px"><button class="btn cream" type="button" id="present" style="border:0;cursor:pointer;font-family:inherit">발표 모드 ▶</button><a class="btn line" href="projects.html">← 프로젝트 목록</a></div></div></div></header>';
-    var kpis = '<div class="wrap"><div class="kpis">' + p.kpis.map(function (k) {
-      var bar = k.bar ? '<div class="bar"><i style="width:' + k.bar.w + '%"></i><b style="left:' + k.bar.at + '%"></b></div><div class="axis"><span>0</span><em>' + k.bar.note + "</em><span>" + k.bar.max + "</span></div>" : "";
-      return '<div class="kpi"><div class="n ' + k.c + '">' + k.n + '</div><div class="l">' + k.l + "</div>" + bar + "</div>";
-    }).join("") + "</div></div>";
-    var info = '<div class="wrap"><div class="info"><div class="ibox"><small>검증 수준</small><div style="margin:8px 0 10px">' + vb(p) + "</div><p>" + esc(p.verify.note) + '</p></div><div class="ibox"><small>내 역할</small><p class="who2"><b>' + esc(c.role) + "</b>" + (c.team ? " · " + esc(c.team) : "") + (c.share ? " · " + esc(c.share) : "") + "</p><ul>" +
-      c.did.map(function (d) { return "<li>" + esc(d) + "</li>"; }).join("") + "</ul>" + (c.other ? '<p class="oth">' + esc(c.other) + "</p>" : "") + "</div></div></div>";
-    var steps = '<div class="wrap"><div class="steps">' + p.steps.map(function (s) {
-      var cls = s.k === "problem" && s.over ? "over" : s.k;
-      return '<div class="step ' + cls + '"><div class="rail"><div class="dot"></div><s></s></div><div class="bd"><h3>' + s.label + "</h3><p>" + esc(s.body) + "</p></div></div>";
-    }).join("") + "</div></div>";
-    var ex = "";
-    if (p.extra) {
-      var e = p.extra;
-      ex += sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">' + e.redefine.eyebrow + "</div><h2>" + e.redefine.title + '</h2><p class="lead3">' + esc(e.redefine.lead) + '</p><div class="ba"><div class="b"><span class="tag">BEFORE</span><h3>' + e.redefine.before.title + "</h3><p>" + e.redefine.before.lines.map(esc).join("<br>") + '</p></div><div class="a"><span class="tag">AFTER</span><h3>' + e.redefine.after.title + "</h3><p>" + e.redefine.after.lines.map(esc).join("<br>") + "</p></div></div></div>", "tight");
-      ex += sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">' + e.pipeline.eyebrow + "</div><h2>" + e.pipeline.title + '</h2><div class="pipe">' + e.pipeline.items.map(function (t, i) { return "<div><span>" + (i + 1) + "</span>" + t + "</div>"; }).join("") + "</div></div>", "tight");
-      ex += sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">' + e.issues.eyebrow + "</div><h2>" + e.issues.title + '</h2><div class="issues">' + e.issues.items.map(function (i) {
-        return '<div class="issue"><h3>' + i.title + '</h3><div class="p"><small>문제</small><p>' + esc(i.problem) + '</p></div><div class="f"><small>해결</small><p>' + esc(i.fix) + '</p></div><div class="r">' + esc(i.result) + "</div></div>";
-      }).join("") + "</div></div>", "tight");
+  function projectEvidence(p) {
+    var gallery = '<div class="gal' + (p.galClass ? " " + p.galClass : "") + '">' + p.gallery.filter(function (g) {
+      return g.src !== "cooling-metrics.svg";
+    }).map(function (g) {
+      return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '><button class="gph gph-button" type="button" aria-label="' + esc(g.alt + " 크게 보기") +
+        '"><img src="assets/img/' + g.src + '" alt="' + esc(g.alt) + '" width="1200" height="800" loading="lazy"></button><figcaption>' + esc(g.cap) + '</figcaption></figure>';
+    }).join("") + '</div>';
+    var link = p.link ? '<a class="btn dark-line" href="' + p.link.href + '" target="_blank" rel="noopener">' + esc(p.link.label.replace(/\s*→$/, "")) + '</a>' : "";
+    var qa = '<div class="qa"><h4>예상 질문</h4>' + p.qa.map(function (item) {
+      return '<details><summary>' + esc(item.q) + '</summary><p>' + esc(item.a) + '</p></details>';
+    }).join("") + '</div>';
+    var limits = p.extra ? '<div class="project-limits"><h4>검증의 한계</h4><ul>' + p.extra.limits.limits.map(function (item) {
+      return '<li>' + esc(item) + '</li>';
+    }).join("") + '</ul></div>' : "";
+    return '<div class="project-evidence-body"><h4>' + esc(p.galleryTitle) + '</h4>' + gallery +
+      (p.galleryNote ? '<p class="gnote">' + esc(p.galleryNote) + '</p>' : "") + projectTechnicalNotes(p) + limits + qa +
+      '<div class="btns">' + link + '<button class="btn dark-line" type="button" data-present="' + p.id + '">발표 모드</button></div></div>';
+  }
+
+  function projectTechnicalNotes(p) {
+    if (!p.extra) return "";
+    var e = p.extra;
+    var redefine = '<h4>' + esc(e.redefine.title) + '</h4><p class="lead3">' + esc(e.redefine.lead) + '</p>' +
+      '<div class="ba"><div class="b"><span class="tag">기존 접근</span><h3>' + esc(e.redefine.before.title) +
+      '</h3><p>' + e.redefine.before.lines.map(esc).join("<br>") + '</p></div><div class="a">' +
+      '<span class="tag">변경 후</span><h3>' + esc(e.redefine.after.title) + '</h3><p>' +
+      e.redefine.after.lines.map(esc).join("<br>") + '</p></div></div>';
+    var pipeline = '<h4>' + esc(e.pipeline.title) + '</h4><div class="pipe">' + e.pipeline.items.map(function (item, i) {
+      return '<div><span>' + (i + 1) + '</span>' + esc(item) + '</div>';
+    }).join("") + '</div>';
+    var issues = '<h4>' + esc(e.issues.title) + '</h4><div class="issues">' + e.issues.items.map(function (item) {
+      return '<div class="issue"><h3>' + esc(item.title) + '</h3><div class="p"><small>문제</small><p>' + esc(item.problem) +
+        '</p></div><div class="f"><small>해결</small><p>' + esc(item.fix) + '</p></div><div class="r">' + esc(item.result) + '</div></div>';
+    }).join("") + '</div>';
+    return [redefine, pipeline, issues].map(function (content) { return sec(content, "tight"); }).join("");
+  }
+
+  function openProjectFromHash() {
+    var id = location.hash.slice(1);
+    if (id === "projects" || id === "career") {
+      document.getElementById(id).scrollIntoView({ block: "start" });
+      return;
     }
-    var gal = sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">' + p.galleryEyebrow + "</div><h2>" + p.galleryTitle + '</h2><div class="gal' + (p.galClass ? " " + p.galClass : "") + '">' + p.gallery.map(function (g) {
-      return '<figure' + (g.cls ? ' class="' + g.cls + '"' : '') + '><div class="gph"><img src="assets/img/' + g.src + '" alt="' + esc(g.alt) + '" width="1200" height="800" loading="lazy" onerror="this.remove()"></div><figcaption>' + g.cap + "</figcaption></figure>";
-    }).join("") + "</div>" + (p.galleryNote ? '<p class="gnote">' + esc(p.galleryNote) + "</p>" : "") + "</div>", "tight");
-    var qa = sec('<div class="dsec" style="padding:0"><div class="eyebrow dark">Q &amp; A</div><h2>예상 질문</h2><div class="qa">' + p.qa.map(function (x, i) {
-      return "<details" + (i === 0 ? " open" : "") + "><summary>" + esc(x.q) + "</summary><p>" + esc(x.a) + "</p></details>";
-    }).join("") + "</div></div>", "tight");
-    var end = "";
-    var link = p.extra && p.link ? '<a class="btn cream" href="' + p.link.href + '" target="_blank" rel="noopener">' + p.link.label + "</a>" : "";
-    link = p.link ? '<a class="btn cream" href="' + p.link.href + '" target="_blank" rel="noopener">' + p.link.label + "</a>" : "";
-    if (p.extra) {
-      end = sec('<div class="endband"><div class="eyebrow">LIMITS &amp; NEXT</div><div class="two"><div><h3>한계</h3><ul>' + p.extra.limits.limits.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul></div><div><h3>다음 과제</h3><ul>" + p.extra.limits.nexts.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + '</ul></div></div><div class="btns">' + link + '<a class="btn line" href="projects.html">다른 프로젝트 보기 →</a></div></div>', "tight");
-    } else {
-      end = sec('<div class="endband">' + (p.moment ? '<div class="eyebrow">MOST PROUD MOMENT</div><p class="big">' + esc(p.moment) + "</p>" : '<p class="big">' + esc(p.closing) + "</p>") + '<div class="btns" style="margin-top:28px"><a class="btn cream" href="projects.html">다른 프로젝트 보기 →</a></div></div>', "tight");
-    }
-    var nav = sec('<div class="pn"><a href="' + href(prev) + '"><small>← 이전 프로젝트</small><b>' + esc(prev.title) + '</b></a><a href="' + href(next) + '" style="text-align:right"><small>다음 프로젝트 →</small><b>' + esc(next.title) + "</b></a></div>", "tight");
-    app.innerHTML = headHtml + kpis + info + steps + ex + gal + qa + end + nav + contact();
-    $("#present").addEventListener("click", function () { openPresent(p); });
+    if (id.indexOf("project-") !== 0) return;
+    var entry = document.getElementById(id);
+    if (!entry || !entry.classList.contains("project-entry")) return;
+    entry.open = true;
+    entry.scrollIntoView({ block: "start" });
+  }
+
+  function legacyProject() {
+    var p = byId(new URLSearchParams(location.search).get("id"));
+    location.replace(p ? href(p) : "index.html#projects");
   }
 
   /* ---------- 소개 · 경력 · 활동 · 자격 ---------- */
@@ -182,17 +179,22 @@
     document.title = "소개 | 조예찬";
     app.innerHTML = head("about", "ABOUT", "예찬적 사고") +
       sec('<p class="about-p">' + nb("이름 그대로", "‘예찬적 사고’를 한다는 말을", "주변에서 들어 왔습니다.") + "<br>" + nb("안 되는 상황에서도", "가능성을 먼저 찾고,", "그 가능성을 설계 변경으로 연결하는", "방식으로 일해 왔습니다.") + "</p>") +
-      sec('<div class="oneline"><div class="eyebrow">ONE LINE</div><p>' + nb("FSR은 결합 후 성능이 떨어졌을 때,", "FPGA는 합성이 불가능했을 때", "포기하지 않고", "원인부터 다시 정의했습니다.") + '</p><div class="btns"><a class="btn line" href="project.html?id=fsr">FSR 보기 →</a><a class="btn line" href="project.html?id=fpga">FPGA 보기 →</a><a class="btn line" href="cases.html">사례 모아보기 →</a></div></div>', "tight") +
+      sec('<div class="oneline"><div class="eyebrow">ONE LINE</div><p>' + nb("FSR은 결합 후 성능이 떨어졌을 때,", "FPGA는 합성이 불가능했을 때", "포기하지 않고", "원인부터 다시 정의했습니다.") + '</p><div class="btns"><a class="btn line" href="index.html#project-fsr">FSR 보기 →</a><a class="btn line" href="index.html#project-fpga">FPGA 보기 →</a><a class="btn line" href="cases.html">사례 모아보기 →</a></div></div>', "tight") +
       sec('<div class="eyebrow dark">DIRECTION</div><h2 class="t">누군가를 돕는 사람</h2><p class="about-p" style="font-size:19px;font-weight:400;margin-bottom:48px">' + nb("앞으로는 누군가를 돕는 사람으로", "일하고 싶습니다.") + "<br>" + nb("전기기사 필기 멘토링,", "대학생 동아리 운영,", "‘따뜻한 말 램프’ 같은 활동도", "모두 그 방향에 있었습니다.") + '</p><div class="lcards">' +
-        [["experience.html", "전기기사 필기 멘토링", "주식회사 맞추다 · 약 50명 대상"], ["activities.html", "대학생 동아리 리더", "구성원 120명에서 170명 이상으로"], ["project.html?id=lamp", "‘따뜻한 말 램프’", "AI 기반 부모 언어 개선 제품"]]
+        [["experience.html", "전기기사 필기 멘토링", "주식회사 맞추다 · 약 50명 대상"], ["activities.html", "대학생 동아리 리더", "구성원 120명에서 170명 이상으로"], [href(byId("lamp")), "‘따뜻한 말 램프’", "AI 기반 부모 언어 개선 제품"]]
           .map(function (l) { return '<a class="lcard" href="' + l[0] + '"><div><b>' + l[1] + "</b><span>" + l[2] + "</span></div><em>자세히 →</em></a>"; }).join("") + "</div>") +
       contact('<a class="btn line" href="experience.html">다음: 경력 →</a>');
   }
+  function careerRows(heading) {
+    return '<div class="rows">' + S.career.map(function (c) {
+      return '<div class="row"><div class="when"><b>' + esc(c.when) + '</b><span class="role">' + esc(c.role) + '</span></div>' +
+        '<div class="bd"><' + heading + '>' + esc(c.org) + '</' + heading + '><p>' + esc(c.body) + '</p></div></div>';
+    }).join("") + '</div>';
+  }
   function experience() {
     document.title = "경력 | 조예찬";
-    app.innerHTML = head("experience", "EXPERIENCE", "경력 및 인턴", "멘토링, 현장 운영, 대학원 연구실까지 세 곳의 경험입니다.") +
-      sec('<div class="rows">' + S.career.map(function (c) { return '<div class="row"><div class="when"><b>' + c.when + '</b><span class="role">' + c.role + '</span></div><div class="bd"><h2>' + c.org + "</h2><p>" + esc(c.body) + "</p></div></div>"; }).join("") + "</div>") +
-      nextBand("activities.html", "활동 · 수상");
+    app.innerHTML = head("experience", "EXPERIENCE", "경력") +
+      sec(careerRows("h2")) + nextBand("activities.html", "활동 및 수상");
   }
   function activities() {
     document.title = "활동·수상 | 조예찬";
@@ -304,14 +306,18 @@
   var lb = document.createElement("dialog"); lb.id = "lb"; lb.setAttribute("aria-label", "이미지 크게 보기"); document.body.appendChild(lb);
   lb.addEventListener("click", function () { lb.close(); });
   document.addEventListener("click", function (e) {
-    var im = e.target.closest(".gph img");
+    var presentation = e.target.closest("[data-present]");
+    if (presentation) { openPresent(byId(presentation.dataset.present)); return; }
+    var galleryButton = e.target.closest(".gph-button");
+    var im = galleryButton ? $("img", galleryButton) : e.target.closest(".gph img");
     if (im) { lb.innerHTML = '<img src="' + im.src + '" alt="' + esc(im.alt) + '"><p>' + esc(im.alt) + "</p>"; lb.showModal(); }
   });
 
   /* ---------- ⑦ 발표 모드 ---------- */
-  var presEl = null, presI = 0, presSlides = [], presP = null;
+  var presEl = null, presI = 0, presSlides = [], presTrigger = null;
   function openPresent(p) {
-    presP = p; presI = 0;
+    presTrigger = document.activeElement;
+    presI = 0;
     presSlides = [
       '<div class="ps-t"><span class="role">' + esc(p.role) + "</span><h2>" + p.titleHtml + "</h2><p>" + esc(p.summary) + "</p>" + tagRow(p.tags) + "</div>",
       '<div class="ps-k">' + p.kpis.map(function (k) { return '<div><b class="' + k.c + '">' + k.n + "</b><span>" + k.l + "</span></div>"; }).join("") + "</div>"
@@ -334,7 +340,14 @@
     $("#pp").disabled = presI === 0; $("#pn").disabled = presI === presSlides.length - 1;
   }
   function go(d) { presI = Math.max(0, Math.min(presSlides.length - 1, presI + d)); drawPres(); }
-  function closePresent() { if (presEl) { presEl.remove(); presEl = null; document.body.style.overflow = ""; } }
+  function closePresent() {
+    if (!presEl) return;
+    presEl.remove();
+    presEl = null;
+    document.body.style.overflow = "";
+    if (presTrigger) presTrigger.focus();
+    presTrigger = null;
+  }
 
   /* ---------- ⑨ 검색 (Ctrl+K) ---------- */
   var sdlg = document.createElement("dialog"); sdlg.id = "sdlg"; sdlg.setAttribute("aria-label", "검색");
@@ -365,12 +378,23 @@
   }
   function openSearch() { if (!sidx) sidx = buildIndex(); if (!sdlg.open) sdlg.showModal(); $("#sq").value = ""; runSearch(); $("#sq").focus(); }
   $("#sq", sdlg).addEventListener("input", runSearch);
+  $("#sr", sdlg).addEventListener("click", function (e) {
+    var target = e.target.closest("a");
+    if (!target) return;
+    sdlg.close();
+    if (page === "home" && target.getAttribute("href") === location.hash) openProjectFromHash();
+  });
   $("#sx", sdlg).addEventListener("click", function () { sdlg.close(); });
   sdlg.addEventListener("click", function (e) { if (e.target === sdlg) sdlg.close(); });
   sdlg.addEventListener("keydown", function (e) {
     if (e.key === "ArrowDown") { e.preventDefault(); sSel = Math.min(sList.length - 1, sSel + 1); drawSearch(); }
     else if (e.key === "ArrowUp") { e.preventDefault(); sSel = Math.max(0, sSel - 1); drawSearch(); }
-    else if (e.key === "Enter" && sList[sSel]) { e.preventDefault(); location.href = sList[sSel].h; }
+    else if (e.key === "Enter" && sList[sSel]) {
+      e.preventDefault();
+      sdlg.close();
+      if (page === "home" && sList[sSel].h === location.hash) openProjectFromHash();
+      else location.href = sList[sSel].h;
+    }
   });
   document.addEventListener("keydown", function (e) {
     if (presEl) {
@@ -387,60 +411,6 @@
   });
   document.addEventListener("click", function (e) { if (e.target.closest("#sbtn")) openSearch(); });
 
-  /* ---------- 스크롤 애니메이션: 수치는 올라가고 막대는 채워집니다 ---------- */
-  function scrollAnim() {
-    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce || !("IntersectionObserver" in window)) return;
-    var NUM = /\d[\d,]*(?:\.\d+)?/g;
-    var bars = [].slice.call(document.querySelectorAll(".bar i"));
-    var nums = [].slice.call(document.querySelectorAll(".stat .n, .kpi .n"));
-    bars.forEach(function (i) {
-      i.setAttribute("data-w", i.style.width);
-      i.style.animation = "none";
-      i.style.width = "0";
-      i.classList.add("anim");
-    });
-    nums.forEach(function (el) {
-      var txt = el.textContent, parts = [];
-      txt.replace(NUM, function (m, off) { parts.push({ s: m, off: off, v: parseFloat(m.replace(/,/g, "")), dec: (m.split(".")[1] || "").length, comma: m.indexOf(",") > -1 }); return m; });
-      if (!parts.length) return;
-      el.__a = { txt: txt, parts: parts };
-      el.textContent = fmt(txt, parts, 0);
-    });
-    function fmt(txt, parts, t) {
-      var out = "", last = 0;
-      parts.forEach(function (p) {
-        out += txt.slice(last, p.off);
-        var v = p.v * t, str = v.toFixed(p.dec);
-        if (p.comma) { var a = str.split("."); a[0] = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); str = a.join("."); }
-        out += str; last = p.off + p.s.length;
-      });
-      return out + txt.slice(last);
-    }
-    function countUp(el) {
-      var a = el.__a, t0 = null, dur = 1200;
-      function step(ts) {
-        if (t0 === null) t0 = ts;
-        var k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-        el.textContent = fmt(a.txt, a.parts, e);
-        if (k < 1) requestAnimationFrame(step); else el.textContent = a.txt;
-      }
-      requestAnimationFrame(step);
-    }
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var el = en.target;
-        io.unobserve(el);
-        if (el.__a) countUp(el);
-        else { el.style.width = el.getAttribute("data-w"); el.classList.add("on"); }
-      });
-    }, { threshold: 0.35 });
-    bars.forEach(function (i) { io.observe(i); });
-    nums.forEach(function (n) { if (n.__a) io.observe(n); });
-  }
-
-  /* ---------- 안내 도우미: 묻는 내용에 맞는 페이지로 안내합니다 (서버 없이 동작하는 규칙 기반) ---------- */
   function initBot() {
     var wrap = document.createElement("div");
     wrap.id = "bot";
@@ -460,13 +430,13 @@
       { re: /연락|이메일|메일|전화|번호|contact/i, say: "연락처는 " + S.email + " 이고, 전화는 " + S.phone + " 입니다.", links: [{ t: "메일 보내기", h: "mailto:" + S.email }] },
       { re: /자격|면허|기사|토익|한국사|어학|교육|이수|수강/, say: "자격, 어학, 교육 이수는 이 페이지에 모아 두었어요.", links: [{ t: "자격 · 교육 보기", h: "credentials.html" }] },
       { re: /수상|상장|우수상|장관상|동아리|활동|봉사/, say: "수상과 대외활동은 이 페이지에서 볼 수 있어요.", links: [{ t: "활동 · 수상 보기", h: "activities.html" }] },
-      { re: /경력|인턴|멘토|근무|일해/, say: "경력과 인턴 경험은 이 페이지에 있어요.", links: [{ t: "경력 보기", h: "experience.html" }] },
+      { re: /경력|인턴|멘토|근무|일해/, say: "경력은 이 페이지에 정리되어 있어요.", links: [{ t: "경력 보기", h: "experience.html" }] },
       { re: /도구|툴|스택|사용 기술|tool/i, say: "도구와 기술은 프로젝트별 표로 정리해 두었어요.", links: [{ t: "도구 매트릭스 보기", h: "tools.html" }] },
       { re: /타임라인|연표|시간순|언제/, say: "시간 순서로 보고 싶다면 이쪽이에요.", links: [{ t: "타임라인 보기", h: "timeline.html" }] },
       { re: /증빙|근거 자료|증명/, say: "증빙 자료는 이 페이지에 모아 두었어요.", links: [{ t: "증빙 보기", h: "evidence.html" }] },
       { re: /원인 재정의|사례|문제 해결/, say: "원인을 다시 정의해 풀어 낸 사례를 모아 둔 페이지예요.", links: [{ t: "사례 보기", h: "cases.html" }] },
       { re: /소개|누구|자기소개|about/i, say: "소개 페이지에서 일하는 방식과 지향점을 볼 수 있어요.", links: [{ t: "소개 보기", h: "about.html" }] },
-      { re: /전체 프로젝트|프로젝트 목록|프로젝트 전체|대표 프로젝트|핵심 프로젝트|프로젝트 보여/, say: "핵심 프로젝트 " + P.length + "개가 목록에 있어요.", links: [{ t: "프로젝트 목록 보기", h: "projects.html" }] }
+      { re: /전체 프로젝트|프로젝트 목록|프로젝트 전체|대표 프로젝트|핵심 프로젝트|프로젝트 보여/, say: "핵심 프로젝트 " + P.length + "개가 목록에 있어요.", links: [{ t: "프로젝트 목록 보기", h: "index.html#projects" }] }
     ];
     var SYN = {
       "안테나": ["fsr", "rasorber", "hfss"], "전파": ["rf", "전자파"], "rf": ["전자파", "fsr"], "흡수": ["fsr", "rasorber"], "pcb": ["fsr"],
@@ -556,9 +526,13 @@
   }
 
   /* ---------- 시작 ---------- */
-  var R = { home: home, projects: projectsPage, project: projectPage, about: about, experience: experience, activities: activities, credentials: credentials, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
+  var R = { home: home, projects: function () { location.replace("index.html#projects"); }, project: legacyProject, about: about, experience: experience, activities: activities, credentials: credentials, cases: cases, tools: tools, timeline: timeline, evidence: evidence, summary: summary };
   (R[page] || home)();
-  applyDomain();
-  scrollAnim();
-  initBot();
+  if (page === "home") {
+    openProjectFromHash();
+    window.addEventListener("hashchange", openProjectFromHash);
+  } else if (page !== "project" && page !== "projects") {
+    applyDomain();
+    initBot();
+  }
 })();

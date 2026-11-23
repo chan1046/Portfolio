@@ -223,3 +223,60 @@ code { background: #EEEBFB; border-radius: 6px; padding: 0 6px; font-size: .92em
 #bot-form button { border: 0; border-radius: 12px; padding: 0 16px; background: #2a2870; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 @media (max-width: 520px) { #bot { right: 12px; bottom: 12px; } #bot-fab b { display: none; } #bot-fab { padding: 8px; } }
 @media print { #bot { display: none; } }
+
+
+/* Home */
+.home-hero { padding: 42px 0 44px; }
+.home-profile { display: flex; align-items: center; gap: 18px; }
+.home-profile .avatar { flex: 0 0 64px; width: 64px; height: 64px; }
+.home-profile h1 { margin: 0; font-size: clamp(32px, 5vw, 54px); line-height: 1.16; }
+.home-profile p { margin-top: 5px; color: #e6e3fa; font-size: 15px; }
+.home-hero .lead { max-width: 740px; margin: 22px 0; color: #fff; line-height: 1.7; }
+.home-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.home-links .btn { padding: 10px 20px; }
+section.home-projects, section.home-career { padding: 40px 0 54px; }
+.home-projects h2.t, .home-career h2.t { margin: 0 0 20px; }
+.project-list { border-top: 1px solid var(--line); }
+.project-entry { border-bottom: 1px solid var(--line); }
+.project-trigger { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 19px 12px; color: var(--ink); cursor: pointer; list-style: none; }
+.project-trigger::-webkit-details-marker { display: none; }
+.project-trigger:hover, .project-entry[open] > .project-trigger { background: #f5f3fe; }
+.project-preview strong { display: block; font-size: clamp(18px, 2.1vw, 24px); line-height: 1.45; letter-spacing: -.02em; }
+.project-preview > span { display: block; margin-top: 4px; color: var(--muted); font-size: 15px; }
+.project-toggle { display: grid; flex: 0 0 32px; width: 32px; height: 32px; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 22px; line-height: 1; background: #fff; }
+.project-toggle::before { content: "+"; }
+.project-entry[open] > .project-trigger .project-toggle::before { content: "−"; }
+.project-body { padding: 18px 12px 28px; }
+.project-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 14px; }
+.project-role { margin-top: 10px; }
+.project-role strong, .project-verify strong { color: var(--ink); margin-right: 6px; }
+.project-story { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.project-stage { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #f9f8fd; }
+.project-stage:last-child { border-color: #c6e3d4; background: #f2faf6; }
+.project-stage dt { margin-bottom: 5px; color: var(--ink); font-weight: 800; }
+.project-stage dd { margin: 0; }
+.project-verify { color: var(--muted); font-size: 15px; }
+.project-evidence { margin-top: 18px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; }
+.project-evidence > summary { color: var(--ink); font-weight: 800; cursor: pointer; }
+.project-evidence-body { padding-top: 14px; }
+.project-evidence-body h4 { margin: 0 0 12px; font-size: 18px; color: var(--ink); }
+.project-evidence-body section.sec { padding: 24px 0 0; }
+.project-evidence-body section.sec > .wrap { padding: 0; }
+.project-evidence-body .qa, .project-limits { margin-top: 22px; }
+.project-evidence-body .btns { margin-top: 16px; }
+.project-evidence-body .btn { font-family: inherit; background: #fff; cursor: pointer; }
+.gph-button { width: 100%; padding: 0; border: 0; color: inherit; cursor: zoom-in; }
+.row .bd h3 { font-size: clamp(18px, 2.1vw, 28px); color: var(--ink); line-height: 1.35; }
+.home-resources { display: flex; flex-wrap: wrap; gap: 10px 24px; padding-top: 16px; padding-bottom: 16px; color: var(--ink); font-size: 15px; font-weight: 700; }
+.home-resources a { text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 760px) {
+  .project-story { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .home-hero { padding: 30px 0 34px; }
+  .home-hero .lead { font-size: 16px; }
+  .home-links .btn { padding: 8px 14px; font-size: 14px; }
+  section.home-projects, section.home-career { padding: 30px 0 38px; }
+  .project-trigger, .project-body { padding-left: 6px; padding-right: 6px; }
+  .project-evidence { padding: 10px; }
+}
