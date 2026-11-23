@@ -607,6 +607,7 @@
   (R[page] || home)();
   if (page === "home") {
     jumpToHomeAnchor();
+    window.addEventListener("hashchange", jumpToHomeAnchor);
   } else if (["project", "projects", "about", "activities", "credentials"].indexOf(page) === -1) {
     applyDomain();
     initBot();
