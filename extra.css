@@ -318,20 +318,20 @@ html:has(body[data-page="home"]) { scroll-behavior: auto; scroll-padding-top: 28
 .portfolio-profile-facts {
   min-width: 0;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: clamp(92px, 9.5vw, 124px) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(14px, 2vw, 22px);
-  padding: clamp(14px, 2.1vw, 24px);
+  gap: clamp(16px, 1.9vw, 24px);
+  padding: clamp(18px, 2.6vw, 32px);
   border: 1px solid #4f6e7b;
   border-radius: 10px;
   background: #193440;
 }
-.portfolio-profile-facts img { width: 88px; height: 112px; object-fit: cover; object-position: center 28%; border-radius: 6px; background: #d1dde0; }
+.portfolio-profile-facts img { width: 100%; height: auto; aspect-ratio: 124 / 158; object-fit: cover; object-position: center 28%; border-radius: 6px; background: #d1dde0; }
 .portfolio-profile-facts dl, .portfolio-profile-facts dd { margin: 0; }
 .portfolio-profile-facts dl > div + div { margin-top: 12px; }
-.portfolio-profile-facts dt { color: #afd9cf; font-size: .875rem; font-weight: 650; }
-.portfolio-profile-facts dd { margin-top: 2px; line-height: 1.55; font-weight: 700; }
-.portfolio-profile-facts dd span { display: inline-block; margin-left: 4px; color: #d5e7ec; font-size: .875rem; font-variant-numeric: tabular-nums; }
+.portfolio-profile-facts dt { color: #afd9cf; font-size: .95rem; font-weight: 650; }
+.portfolio-profile-facts dd { margin-top: 3px; font-size: 1.05rem; line-height: 1.55; font-weight: 700; }
+.portfolio-profile-facts dd span { display: inline-block; margin-left: 4px; color: #d5e7ec; font-size: .95rem; font-variant-numeric: tabular-nums; }
 
 .portfolio-layout {
   display: grid;
@@ -513,8 +513,8 @@ html:has(body[data-page="home"]) { scroll-behavior: auto; scroll-padding-top: 28
   .portfolio-profile h1 { font-size: clamp(3.1rem, 10vw, 4.5rem); }
   .portfolio-profile-intro p { margin-top: 8px; }
   .portfolio-actions { margin-top: 19px; }
-  .portfolio-profile-facts { max-width: 420px; grid-template-columns: 65px minmax(0, 1fr); gap: 12px; }
-  .portfolio-profile-facts img { width: 65px; height: 87px; }
+  .portfolio-profile-facts { max-width: 420px; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+  .portfolio-profile-facts img { width: 84px; height: 108px; aspect-ratio: auto; }
   .portfolio-profile-facts dl > div + div { margin-top: 6px; }
   .is-featured .portfolio-project-preview { grid-template-columns: 1fr; gap: 11px; }
   .is-featured .portfolio-project-media { aspect-ratio: 16 / 10; }
