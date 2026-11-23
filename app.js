@@ -175,11 +175,12 @@
     var education = S.edu.map(function (item) {
       return homeRecord(item.title, item.when, item.hours + " | " + item.body);
     }).join("");
-    return '<div class="sec white home-records"><div class="wrap home-records-grid">' +
+    return '<div class="sec white home-records"><div class="wrap"><div class="home-records-frame">' +
       '<section id="activities" aria-labelledby="activities-title"><h2 class="t" id="activities-title">활동 및 수상</h2>' +
       '<h3>활동</h3><ul>' + activities + '</ul><h3>수상</h3><ul>' + awards + '</ul></section>' +
       '<section id="credentials" aria-labelledby="credentials-title"><h2 class="t" id="credentials-title">자격 및 교육</h2>' +
-      '<h3>자격 및 어학</h3><ul>' + certs + '</ul><h3>교육</h3><ul>' + education + '</ul></section></div></div>';
+      '<div class="home-records-categories"><div><h3>자격 및 어학</h3><ul>' + certs + '</ul></div>' +
+      '<div><h3>교육</h3><ul>' + education + '</ul></div></div></section></div></div></div>';
   }
 
   function projectPreview(p, item) {
