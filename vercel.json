@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node vercel-portfolio/build.mjs",
+  "outputDirectory": "vercel-portfolio/dist",
+  "rewrites": [
+    {
+      "source": "/demos/voicefishing",
+      "destination": "/demos/index.html"
+    },
+    {
+      "source": "/demos/solar",
+      "destination": "/demos/index.html"
+    }
+  ]
+}
